@@ -1,6 +1,7 @@
 from flask import Flask
 
 from endpoints.hot import HotHandler
+from endpoints.resize import ResizeHandler
 from handler import Handler
 
 
@@ -12,12 +13,13 @@ class FlaskApp:
     def run(self):
         self.app.run()
 
-    def add_endpoint(self, endpoint=None, endpoint_name=None, handler: Handler=None):
-        self.app.add_url_rule(endpoint, endpoint_name, handler)
+    def add_endpoint(self, endpoint, handler: Handler):
+        self.app.add_url_rule(f"/api/{endpoint}", endpoint, handler)
 
 
 app = FlaskApp(__name__)
-app.add_endpoint("/hot", "hot", HotHandler())
+app.add_endpoint("hot", HotHandler())
+app.add_endpoint("resize", ResizeHandler())
 
 if __name__ == "__main__":
     app.run()

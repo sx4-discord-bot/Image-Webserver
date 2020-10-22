@@ -1,31 +1,24 @@
-import json
-
 from PIL import ImageSequence, Image
-from flask import Response
 from requests.exceptions import MissingSchema, ConnectionError
 
 from handler import Handler
 
+from utility.response import BadRequest
+
 
 class HotHandler(Handler):
 
-    def __call__(self, *args):
-        image_url = self.request.args.get("image")
+    def __call__(self):
+        image_url = self.query("image")
         if not image_url:
-            return Response(status=400,
-                            response=json.dumps({"status": 400, "message": "Image query not given"}),
-                            content_type="application/json")
+            return BadRequest("Image query not given")
 
         try:
             image = self.get_image(image_url)
         except MissingSchema:
-            return Response(status=400,
-                            response=json.dumps({"status": 400, "message": "Url could not be formed to an image"}),
-                            content_type="application/json")
+            return BadRequest("Url could not be formed to an image")
         except ConnectionError:
-            return Response(status=400,
-                            response=json.dumps({"status": 400, "message": "Site took too long to respond"}),
-                            content_type="application/json")
+            return BadRequest("Site took too long to respond")
 
         background = self.get_image_asset("thats-hot-meme.png")
         blank = Image.new("RGBA", background.size, (255, 255, 255, 0))

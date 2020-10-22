@@ -14,7 +14,10 @@ class Handler:
         self.request = request
 
     def __call__(self, *args):
-        return Response(status=200)
+        return Response(status=204)
+
+    def query(self, query: str):
+        return self.request.args.get(query)
 
     def get_image(self, url) -> Image:
         return Image.open(BytesIO(requests.get(url, stream=True).content))
