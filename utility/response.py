@@ -29,3 +29,9 @@ class Forbidden(JsonResponse):
 
     def __init__(self, message: str=None):
         super().__init__(403, message)
+
+
+class NotFound(JsonResponse):
+
+    def __init__(self, message: str=None):
+        super().__init__(404, message)

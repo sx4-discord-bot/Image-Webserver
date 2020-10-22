@@ -1,25 +1,23 @@
+import traceback
+
 from flask import Flask
 
 from endpoints.hot import HotHandler
 from endpoints.resize import ResizeHandler
-from handler import Handler
+
+BASE = "/api/{}"
+IMAGE_ASSET_PATH = "resources/images/"
+FONT_ASSET_PATH = "resources/fonts/"
+
+app = Flask(__name__)
+app.add_url_rule(BASE.format("hot"), "hot", HotHandler())
+app.add_url_rule(BASE.format("resize"), "resize", ResizeHandler())
 
 
-class FlaskApp:
+@app.errorhandler(404)
+def not_found(error):
+    return "You've reached a dead end, turn around"
 
-    def __init__(self, name):
-        self.app = Flask(name)
-
-    def run(self):
-        self.app.run()
-
-    def add_endpoint(self, endpoint, handler: Handler):
-        self.app.add_url_rule(f"/api/{endpoint}", endpoint, handler)
-
-
-app = FlaskApp(__name__)
-app.add_endpoint("hot", HotHandler())
-app.add_endpoint("resize", ResizeHandler())
 
 if __name__ == "__main__":
     app.run()

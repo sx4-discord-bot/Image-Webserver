@@ -2,6 +2,7 @@ from PIL import ImageSequence
 from requests.exceptions import MissingSchema, ConnectionError
 
 from handler import Handler
+from utility.image import get_image
 from utility.number import get_int, get_float
 from utility.response import BadRequest
 
@@ -14,7 +15,7 @@ class ResizeHandler(Handler):
             return BadRequest("Image query not given")
 
         try:
-            image = self.get_image(image_url)
+            image = get_image(image_url)
         except MissingSchema:
             return BadRequest("Url could not be formed to an image")
         except ConnectionError:
@@ -23,7 +24,7 @@ class ResizeHandler(Handler):
         width = self.query("width") or self.query("w")
         height = self.query("height") or self.query("h")
 
-        width =  get_int(width) or get_float(width)
+        width = get_int(width) or get_float(width)
         height = get_int(height) or get_float(height)
 
         if not width or not height:

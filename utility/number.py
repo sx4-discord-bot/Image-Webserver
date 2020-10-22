@@ -1,4 +1,7 @@
 def get_float(query: str):
+    if not query:
+        return None
+
     try:
         return float(query)
     except ValueError:
@@ -6,6 +9,9 @@ def get_float(query: str):
 
 
 def get_int(query: str):
+    if not query:
+        return None
+
     try:
         return int(query)
     except ValueError:
