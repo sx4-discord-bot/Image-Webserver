@@ -9,7 +9,7 @@ class JsonResponse(Response):
         super().__init__()
 
         self.status_code = status
-        self.response = json.dumps({"status": status, "message": message})
+        self.data = json.dumps({"status": status, "message": message})
         self.content_type = "application/json"
 
 

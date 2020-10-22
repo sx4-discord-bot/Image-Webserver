@@ -1,4 +1,7 @@
-def get_float(query: str):
+from typing import Optional
+
+
+def get_float(query: str) -> Optional[float]:
     if not query:
         return None
 
@@ -8,7 +11,7 @@ def get_float(query: str):
         return None
 
 
-def get_int(query: str):
+def get_int(query: str) -> Optional[int]:
     if not query:
         return None
 

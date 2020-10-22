@@ -1,17 +1,15 @@
-import traceback
-
 from flask import Flask
 
+from endpoints.crop import CropHandler
 from endpoints.hot import HotHandler
 from endpoints.resize import ResizeHandler
 
 BASE = "/api/{}"
-IMAGE_ASSET_PATH = "resources/images/"
-FONT_ASSET_PATH = "resources/fonts/"
 
 app = Flask(__name__)
 app.add_url_rule(BASE.format("hot"), "hot", HotHandler())
 app.add_url_rule(BASE.format("resize"), "resize", ResizeHandler())
+app.add_url_rule(BASE.format("crop"), "crop", CropHandler())
 
 
 @app.errorhandler(404)

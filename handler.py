@@ -9,5 +9,5 @@ class Handler:
     def __call__(self, *args):
         return Response(status=204)
 
-    def query(self, query: str):
+    def query(self, query: str) -> str:
         return self.request.args.get(query)
