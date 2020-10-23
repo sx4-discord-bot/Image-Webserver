@@ -17,10 +17,15 @@ def get_image_asset(path: str) -> Image:
 
 
 def get_image_response(frames: [Image]) -> Response:
-    f = "png" if len(frames) == 1 else "gif"
+    png = len(frames) == 1
+    f = "png" if png else "gif"
 
     b = BytesIO()
-    frames[0].save(b, format=f, save_all=True, append_images=frames[1:], loop=0, optimize=True, disposal=2, transparency=0)
+    if png:
+        frames[0].save(b, format=f)
+    else:
+        frames[0].save(b, format=f, save_all=True, append_images=frames[1:], loop=0, optimize=True, disposal=2, transparency=0)
+
     b.seek(0)
 
     return send_file(b, mimetype=f"image/{f}")

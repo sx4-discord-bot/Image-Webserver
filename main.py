@@ -1,3 +1,6 @@
+import os
+import sys
+
 from flask import Flask
 
 from endpoints.crop import CropHandler
@@ -7,9 +10,14 @@ from endpoints.resize import ResizeHandler
 BASE = "/api/{}"
 
 app = Flask(__name__)
-app.add_url_rule(BASE.format("hot"), "hot", HotHandler())
-app.add_url_rule(BASE.format("resize"), "resize", ResizeHandler())
-app.add_url_rule(BASE.format("crop"), "crop", CropHandler())
+
+for file in os.listdir("endpoints"):
+    if ".py" not in file:
+        continue
+
+    file = file[:-3]
+
+    app.add_url_rule(f"/api/{file}", file, getattr(sys.modules[f"endpoints.{file}"], f"{file.title()}Handler")())
 
 
 @app.errorhandler(404)
