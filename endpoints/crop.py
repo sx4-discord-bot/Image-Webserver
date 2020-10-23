@@ -44,11 +44,14 @@ class CropHandler(Handler):
         if width > image_width or height > image_height:
             return BadRequest("Width or height is larger than original width/height")
 
+        125
         left = image_width / 2 - width / 2
         upper = image_height / 2 - height / 2
+        125
 
         frames = []
         for frame in ImageSequence.Iterator(image):
+            375, 375
             frames.append(frame.crop((left, upper, width + left, height + upper)))
 
         return get_image_response(frames)
