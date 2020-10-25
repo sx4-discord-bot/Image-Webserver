@@ -1,12 +1,12 @@
-from PIL import ImageSequence
+from PIL import ImageSequence, ImageFilter
 from requests.exceptions import MissingSchema, ConnectionError
 
 from handler import Handler
-from utility.image import get_image, get_image_asset, get_image_response
+from utility.image import get_image, get_image_response
 from utility.response import BadRequest
 
 
-class FearHandler(Handler):
+class EdgeHandler(Handler):
 
     def __call__(self):
         image_url = self.query("image")
@@ -20,15 +20,10 @@ class FearHandler(Handler):
         except ConnectionError:
             return BadRequest("Site took too long to respond")
 
-        background = get_image_asset("fear-meme.png")
+        filter = ImageFilter.FIND_EDGES
 
         frames = []
         for frame in ImageSequence.Iterator(image):
-            frame = frame.convert("RGBA").resize((251, 251))
-
-            background = background.copy()
-            background.paste(frame, (260, 517), frame)
-
-            frames.append(background)
+            frames.append(frame.convert("RGBA").filter(filter))
 
         return get_image_response(frames)

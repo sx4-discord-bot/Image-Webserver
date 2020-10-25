@@ -1,8 +1,4 @@
-from io import BytesIO
-from math import ceil
-
-import requests
-from PIL import Image, ImageSequence
+from PIL import ImageSequence
 from requests.exceptions import MissingSchema, ConnectionError
 
 from handler import Handler
@@ -10,7 +6,7 @@ from utility.image import get_image, get_image_response, max_pixels
 from utility.response import BadRequest
 
 
-class FlagHandler(Handler):
+class InvertHandler(Handler):
 
     def __call__(self):
         image_url = self.query("image")
@@ -24,19 +20,18 @@ class FlagHandler(Handler):
         except ConnectionError:
             return BadRequest("Site took too long to respond")
 
-        flag = self.query("flag")
-
-        flag_response = requests.get(f"http://www.geonames.org/flags/x/{flag}.gif", stream=True)
-        if flag_response.status_code == 404:
-            return BadRequest("Invalid flag code")
-
-        final_size = max_pixels(image.size, 200)
-        flag_image = Image.open(BytesIO(flag_response.content)).convert("RGBA").resize(final_size)
+        final_size = max_pixels(image.size, 500)
 
         frames = []
         for frame in ImageSequence.Iterator(image):
             frame = frame.convert("RGBA").resize(final_size)
 
-            frames.append(Image.blend(frame, flag_image, 0.35))
+            pixels = frame.load()
+            for x in range(0, frame.size[0]):
+                for y in range(0, frame.size[1]):
+                    r, g, b, a = pixels[x, y]
+                    pixels[x, y] = (255 - r, 255 - g, 255 - b, a)
+
+            frames.append(frame)
 
         return get_image_response(frames, transparency=255)

@@ -1,4 +1,5 @@
 from io import BytesIO
+from math import ceil
 from typing import Optional, Tuple
 
 import requests
@@ -26,6 +27,15 @@ def create_avatar(image: Image) -> Image:
     output.putalpha(mask)
 
     return output
+
+
+def max_pixels(image_size: Tuple[int, int], max_size: int) -> Tuple[int, int]:
+    width, height = image_size
+    if width and height < max_size:
+        return image_size
+
+    ratio = max(width, height) / max_size
+    return ceil(width / ratio), ceil(height / ratio)
 
 
 def get_image_response(frames: [Image], transparency: int = 0) -> Response:
