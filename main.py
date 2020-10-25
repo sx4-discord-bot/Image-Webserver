@@ -1,3 +1,4 @@
+import inspect
 import json
 import os
 import sys
@@ -18,7 +19,10 @@ for file in os.listdir("endpoints"):
 
     __import__(f"endpoints.{file}")
 
-    app.add_url_rule(f"/api/{file}", file, getattr(sys.modules[f"endpoints.{file}"], f"{file.title()}Handler")())
+    for name, obj in inspect.getmembers(sys.modules[f"endpoints.{file}"]):
+        if inspect.isclass(obj) and name != "Handler" and "Handler" in name:
+            app.add_url_rule(f"/api/{file}", file, obj())
+            break
 
 
 @app.before_request
