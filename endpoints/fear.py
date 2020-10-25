@@ -1,4 +1,4 @@
-from PIL import ImageSequence, ImageFilter
+from PIL import ImageSequence
 from requests.exceptions import MissingSchema, ConnectionError
 
 from handler import Handler
@@ -6,7 +6,7 @@ from utility.image import get_image, get_image_asset, get_image_response
 from utility.response import BadRequest
 
 
-class TrashHandler(Handler):
+class FearHandler(Handler):
 
     def __call__(self):
         image_url = self.query("image")
@@ -20,17 +20,17 @@ class TrashHandler(Handler):
         except ConnectionError:
             return BadRequest("Site took too long to respond")
 
-        background = get_image_asset("trash-meme.jpg")
-
-        filter = ImageFilter.GaussianBlur(10)
+        background = get_image_asset("fear-meme.png")
 
         frames = []
         for frame in ImageSequence.Iterator(image):
-            frame = frame.convert("RGBA").resize((385, 384)).filter(filter)
+            frame = frame.convert("RGBA").resize((251, 251))
 
             background = background.copy()
-            background.paste(frame, (384, 0), frame)
+            background.paste(frame, (260, 517), frame)
 
             frames.append(background)
+
+        print(len(frames))
 
         return get_image_response(frames)
