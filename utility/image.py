@@ -36,8 +36,7 @@ def get_image_response(frames: [Image], transparency: int = 0) -> Response:
     if png:
         frames[0].save(b, format=f)
     else:
-        frames[0].save(b, format=f, save_all=True, append_images=frames[1:], loop=0, optimize=True, disposal=2,
-                       transparency=transparency)
+        frames[0].save(b, format=f, save_all=True, append_images=frames[1:], loop=0, optimize=True, disposal=2, transparency=transparency)
 
     b.seek(0)
 
