@@ -24,12 +24,11 @@ class GoogleHandler(Handler):
             copy = background.copy()
             draw = ImageDraw.Draw(copy)
 
+            draw.text((378, 319), text, 0, font)
+
             if i < length:
-                draw.text((378, 319), text, 0, font)
                 draw.text((378 + font.getsize(text)[0], 319), "|", 0, font)
             else:
-                draw.text((378, 319), text, 0, font)
-
                 remaining = (i - length) % 6
                 if remaining == 3 or remaining == 4 or remaining == 5:
                     draw.text((378 + font.getsize(text)[0], 319), "|", 0, font)
