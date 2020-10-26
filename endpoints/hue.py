@@ -13,7 +13,7 @@ class HueHandler(Handler):
     def __init__(self, app):
         super().__init__(app)
 
-        self.queries = [("image", str), ("frames", Optional[int])]
+        self.queries = [(["image"], str), (["frames"], Optional[int])]
 
     def __call__(self):
         image_url = self.query("image")

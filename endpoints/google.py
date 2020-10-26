@@ -10,6 +10,8 @@ class GoogleHandler(Handler):
     def __init__(self, app):
         super().__init__(app)
 
+        self.queries = [(["query", "q"], str)]
+
     def __call__(self):
         query = self.query("q") or self.query("query")
         if not query:

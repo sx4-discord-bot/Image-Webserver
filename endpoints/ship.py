@@ -11,6 +11,8 @@ class ShipHandler(Handler):
     def __init__(self, app):
         super().__init__(app)
 
+        self.queries = [(["image"], str), (["percent"], int)]
+
     def __call__(self):
         first_image_url = self.query("first_image")
         if not first_image_url:

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from PIL import Image
 
 from handler import Handler
@@ -12,6 +14,7 @@ class ColourHandler(Handler):
         super().__init__(app)
 
         self.aliases = ["color"]
+        self.queries = [(["width", "w"], Optional[int]), (["height", "h"], Optional[int])]
 
     def __call__(self):
         colour = self.query("colour", int)

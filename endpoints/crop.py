@@ -1,3 +1,5 @@
+from typing import Optional
+
 from PIL import ImageSequence
 from requests.exceptions import MissingSchema, ConnectionError
 
@@ -10,6 +12,8 @@ class CropHandler(Handler):
 
     def __init__(self, app):
         super().__init__(app)
+
+        self.queries = [(["image"], str), (["width", "w"], Optional[float]), (["height", "h"], Optional[float])]
 
     def __call__(self):
         image_url = self.query("image")
@@ -25,8 +29,8 @@ class CropHandler(Handler):
 
         image_width, image_height = image.size
 
-        width = get_float(self.query("width") or self.query("w"))
-        height = get_float(self.query("height") or self.query("h"))
+        width = self.query("width", float) or self.query("w", float)
+        height = self.query("height", float) or self.query("h", float)
 
         if not width and not height:
             return BadRequest("width and height query not given")

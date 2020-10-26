@@ -13,6 +13,8 @@ class ChristmasHandler(Handler):
     def __init__(self, app):
         super().__init__(app)
 
+        self.queries = [(["image"], str)]
+
     def __call__(self):
         image_url = self.query("image")
         if not image_url:

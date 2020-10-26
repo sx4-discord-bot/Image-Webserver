@@ -1,3 +1,5 @@
+from typing import Optional
+
 from PIL import ImageSequence
 from requests.exceptions import MissingSchema, ConnectionError
 
@@ -10,6 +12,8 @@ class ResizeHandler(Handler):
 
     def __init__(self, app):
         super().__init__(app)
+
+        self.queries = [(["image"], str), (["width", "w"], Optional[float]), (["height", "h"], Optional[float])]
 
     def __call__(self):
         image_url = self.query("image")
