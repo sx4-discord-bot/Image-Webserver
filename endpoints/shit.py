@@ -1,13 +1,12 @@
-from PIL import ImageSequence, Image
+from PIL import Image, ImageSequence
 from requests.exceptions import MissingSchema, ConnectionError
 
 from handler import Handler
 from utility.image import get_image, get_image_asset, get_image_response
-
 from utility.response import BadRequest
 
 
-class HotHandler(Handler):
+class ShitHandler(Handler):
 
     def __call__(self):
         image_url = self.query("image")
@@ -21,15 +20,15 @@ class HotHandler(Handler):
         except ConnectionError:
             return BadRequest("Site took too long to respond")
 
-        background = get_image_asset("thats-hot-meme.png")
-        blank = Image.new("RGBA", background.size, (255, 255, 255, 0))
+        blank = Image.new("RGBA", (763, 1000), (255, 255, 255, 0))
+        background = get_image_asset("shit-meme.png")
 
         frames = []
         for frame in ImageSequence.Iterator(image):
-            frame = frame.convert("RGBA").resize((400, 300))
+            frame = frame.convert("RGBA").resize((185, 185)).rotate(50, expand=True)
 
             blank = blank.copy()
-            blank.paste(frame, (8, 213), frame)
+            blank.paste(frame, (215, 675), frame)
             blank.paste(background, (0, 0), background)
 
             frames.append(blank)

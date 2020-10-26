@@ -12,7 +12,7 @@ class ColourHandler(Handler):
     def __call__(self):
         colour = get_int(self.query("colour"))
         if not colour:
-            return BadRequest("colour query not given")
+            return BadRequest("colour query not given or not valid")
 
         width = get_int(self.query("width") or self.query("w")) or 100
         height = get_int(self.query("height") or self.query("h")) or 100

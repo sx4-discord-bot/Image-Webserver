@@ -38,8 +38,6 @@ class CommonColourHandler(Handler):
                 else:
                     data[colour] += 1
 
-        colours = []
-        for key, value in sorted(data.items(), key=lambda item: item[1], reverse=True):
-            colours.append({"colour": key, "pixels": value})
+        colours = [{"colour": key, "pixels": value} for key, value in sorted(data.items(), key=lambda item: item[1], reverse=True)]
 
         return Response(status=200, response=json.dumps({"status": 200, "colours": colours}), content_type="application/json")

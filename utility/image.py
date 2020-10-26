@@ -3,7 +3,7 @@ from math import ceil
 from typing import Optional, Tuple
 
 import requests
-from PIL import Image, ImageOps, ImageDraw
+from PIL import Image, ImageOps, ImageDraw, ImageFont
 from flask import Response, send_file
 
 IMAGE_ASSET_PATH = "resources/images/"
@@ -16,6 +16,10 @@ def get_image(url: str) -> Image:
 
 def get_image_asset(path: str) -> Image:
     return Image.open(IMAGE_ASSET_PATH + path)
+
+
+def get_font_asset(path: str, size: int) -> ImageFont:
+    return ImageFont.truetype(FONT_ASSET_PATH + path, size)
 
 
 def create_avatar(image: Image) -> Image:
@@ -42,12 +46,19 @@ def get_image_response(frames: [Image], transparency: int = 0) -> Response:
     png = len(frames) == 1
     f = "png" if png else "gif"
 
+    first_frame = frames[0]
+
     b = BytesIO()
     if png:
-        frames[0].save(b, format=f)
+        first_frame.save(b, format=f)
     else:
-        frames[0].save(b, format=f, save_all=True, append_images=frames[1:], loop=0, optimize=True, disposal=2, transparency=transparency)
+        first_frame.save(b, format=f, save_all=True, append_images=frames[1:], loop=0, optimize=True, disposal=2,
+                         transparency=transparency)
 
     b.seek(0)
 
-    return send_file(b, mimetype=f"image/{f}")
+    response = send_file(b, mimetype=f"image/{f}")
+    response.headers["width"] = first_frame.size[0]
+    response.headers["height"] = first_frame.size[1]
+
+    return response
