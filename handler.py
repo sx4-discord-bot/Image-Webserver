@@ -10,7 +10,8 @@ class Handler:
         self.app = app
         self.aliases = []
         self.queries = []
-        self.name = self.__module__.split(".")[1]
+        self.methods = ["GET"]
+        self.name = self.__module__.split(".")[-1]  # -1 in case the root of the file changes
 
     def __call__(self):
         return Response(status=204)

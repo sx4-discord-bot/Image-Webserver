@@ -9,7 +9,7 @@ from utility.response import Unauthorized, InternalError, NotFound
 
 config = json.load(open("config.json"))
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=os.path.abspath("../static"))
 
 app.endpoints = []
 
