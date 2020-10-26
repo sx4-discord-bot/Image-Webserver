@@ -7,6 +7,9 @@ from utility.response import BadRequest
 
 class GoogleHandler(Handler):
 
+    def __init__(self, app):
+        super().__init__(app)
+
     def __call__(self):
         query = self.query("q") or self.query("query")
         if not query:

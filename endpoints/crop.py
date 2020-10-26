@@ -3,11 +3,13 @@ from requests.exceptions import MissingSchema, ConnectionError
 
 from handler import Handler
 from utility.image import get_image, get_image_response
-from utility.number import get_float
 from utility.response import BadRequest
 
 
 class CropHandler(Handler):
+
+    def __init__(self, app):
+        super().__init__(app)
 
     def __call__(self):
         image_url = self.query("image")

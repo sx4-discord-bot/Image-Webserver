@@ -3,11 +3,13 @@ from requests.exceptions import MissingSchema, ConnectionError
 
 from handler import Handler
 from utility.image import get_image, get_image_response
-from utility.number import get_float
 from utility.response import BadRequest
 
 
 class ResizeHandler(Handler):
+
+    def __init__(self, app):
+        super().__init__(app)
 
     def __call__(self):
         image_url = self.query("image")
@@ -21,8 +23,8 @@ class ResizeHandler(Handler):
         except ConnectionError:
             return BadRequest("Site took too long to respond")
 
-        width = get_float(self.query("width") or self.query("w"))
-        height = get_float(self.query("height") or self.query("h"))
+        width = self.query("width", float) or self.query("w", float)
+        height = self.query("height", float) or self.query("h", float)
 
         if not width and not height:
             return BadRequest("width and height query not given")

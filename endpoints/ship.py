@@ -3,11 +3,13 @@ from requests.exceptions import MissingSchema, ConnectionError
 
 from handler import Handler
 from utility.image import create_avatar, get_image_asset, get_image_response, get_image
-from utility.number import get_int
 from utility.response import BadRequest
 
 
 class ShipHandler(Handler):
+
+    def __init__(self, app):
+        super().__init__(app)
 
     def __call__(self):
         first_image_url = self.query("first_image")
@@ -32,9 +34,12 @@ class ShipHandler(Handler):
         except ConnectionError:
             return BadRequest("Site for second url took too long to respond")
 
-        percent = get_int(self.query("percent"))
+        percent = self.query("percent", int)
         if not percent:
             return BadRequest("Percent query is not a number or not given")
+
+        if percent > 100 or percent < 1:
+            return BadRequest("Percent cannot be larger than 100 or less than 1")
 
         blank = Image.new("RGBA", (930, 290), (255, 255, 255, 0))
         border = create_avatar(Image.new("RGBA", (290, 290), (255, 255, 255, 255)))

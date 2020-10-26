@@ -11,6 +11,8 @@ config = json.load(open("config.json"))
 
 app = Flask(__name__)
 
+app.endpoints = []
+
 for file in os.listdir("endpoints"):
     if ".py" not in file:
         continue
@@ -21,7 +23,14 @@ for file in os.listdir("endpoints"):
 
     for name, obj in inspect.getmembers(sys.modules[f"endpoints.{file}"]):
         if inspect.isclass(obj) and name != "Handler" and "Handler" in name:
-            app.add_url_rule(f"/api/{file}", file, obj())
+            handler = obj(app)
+
+            app.endpoints.append(handler)
+            app.add_url_rule(f"/api/{handler.name}", handler.name, handler)
+
+            for alias in handler.aliases:
+                app.add_url_rule(f"/api/{alias}", alias, handler)
+
             break
 
 

@@ -11,6 +11,11 @@ from utility.response import BadRequest
 
 class CommonColourHandler(Handler):
 
+    def __init__(self, app):
+        super().__init__(app)
+
+        self.aliases = ["common-color"]
+
     def __call__(self):
         image_url = self.query("image")
         if not image_url:
