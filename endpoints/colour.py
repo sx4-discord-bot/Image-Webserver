@@ -16,7 +16,7 @@ class ColourHandler(Handler):
         self.aliases = ["color"]
         self.queries = [(["width", "w"], Optional[int]), (["height", "h"], Optional[int])]
 
-    def __call__(self):
+    def on_request(self):
         colour = self.query("colour", int)
         if not colour:
             return BadRequest("colour query not given or not valid")

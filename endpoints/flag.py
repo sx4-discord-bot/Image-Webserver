@@ -1,35 +1,21 @@
 from io import BytesIO
 
 import requests
-from PIL import Image, ImageSequence, UnidentifiedImageError
-from requests.exceptions import MissingSchema, ConnectionError
+from PIL import Image, ImageSequence
 
-from handlers.handler import Handler
-from utility.image import get_image, get_image_response, max_pixels
+from handlers.handler import SingleImageHandler
+from utility.image import get_image_response, max_pixels
 from utility.response import BadRequest
 
 
-class FlagHandler(Handler):
+class FlagHandler(SingleImageHandler):
 
     def __init__(self, app):
         super().__init__(app)
 
         self.queries = [(["image"], str), (["flag"], str)]
 
-    def __call__(self):
-        image_url = self.query("image")
-        if not image_url:
-            return BadRequest("Image query not given")
-
-        try:
-            image = get_image(image_url)
-        except MissingSchema:
-            return BadRequest("Invalid url")
-        except UnidentifiedImageError:
-            return BadRequest("Url could not be formed to an image")
-        except ConnectionError:
-            return BadRequest("Site took too long to respond")
-
+    def on_request(self, image):
         flag = self.query("flag")
 
         flag_response = requests.get(f"http://www.geonames.org/flags/x/{flag}.gif", stream=True)

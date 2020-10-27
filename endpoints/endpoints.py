@@ -5,9 +5,6 @@ from handlers.handler import Handler
 
 class EndpointsHandler(Handler):
 
-    def __init__(self, app):
-        super().__init__(app)
-
     def format_queries(self, queries: List[Tuple[List[str], Type[Any]]]) -> str:
         builder = []
         for i, (names, t) in enumerate(queries):
@@ -26,7 +23,7 @@ class EndpointsHandler(Handler):
 
         return "".join(builder)
 
-    def __call__(self):
+    def on_request(self):
         builder = []
         for endpoint in self.app.endpoints:
             builder.append("<header><h1><u>")

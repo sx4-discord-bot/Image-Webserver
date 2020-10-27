@@ -13,7 +13,7 @@ class ShipHandler(Handler):
 
         self.queries = [(["image"], str), (["percent"], int)]
 
-    def __call__(self):
+    def on_request(self):
         first_image_url = self.query("first_image")
         if not first_image_url:
             return BadRequest("first_image query not given")

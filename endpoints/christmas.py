@@ -1,34 +1,14 @@
 from math import sqrt
 
-from PIL import ImageSequence, Image, UnidentifiedImageError
-from requests.exceptions import MissingSchema, ConnectionError
+from PIL import ImageSequence, Image
 
-from handlers.handler import Handler
-from utility.image import get_image, max_pixels, get_image_response
-from utility.response import BadRequest
+from handlers.handler import SingleImageHandler
+from utility.image import max_pixels, get_image_response
 
 
-class ChristmasHandler(Handler):
+class ChristmasHandler(SingleImageHandler):
 
-    def __init__(self, app):
-        super().__init__(app)
-
-        self.queries = [(["image"], str)]
-
-    def __call__(self):
-        image_url = self.query("image")
-        if not image_url:
-            return BadRequest("Image query not given")
-
-        try:
-            image = get_image(image_url)
-        except MissingSchema:
-            return BadRequest("Invalid url")
-        except UnidentifiedImageError:
-            return BadRequest("Url could not be formed to an image")
-        except ConnectionError:
-            return BadRequest("Site took too long to respond")
-
+    def on_request(self, image):
         final_size = max_pixels(image.size, 500)
 
         frames = []

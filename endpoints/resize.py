@@ -1,34 +1,20 @@
 from typing import Optional
 
-from PIL import ImageSequence, UnidentifiedImageError
-from requests.exceptions import MissingSchema, ConnectionError
+from PIL import ImageSequence
 
-from handlers.handler import Handler
-from utility.image import get_image, get_image_response
+from handlers.handler import SingleImageHandler
+from utility.image import get_image_response
 from utility.response import BadRequest
 
 
-class ResizeHandler(Handler):
+class ResizeHandler(SingleImageHandler):
 
     def __init__(self, app):
         super().__init__(app)
 
         self.queries = [(["image"], str), (["width", "w"], Optional[float]), (["height", "h"], Optional[float])]
 
-    def __call__(self):
-        image_url = self.query("image")
-        if not image_url:
-            return BadRequest("Image query not given")
-
-        try:
-            image = get_image(image_url)
-        except MissingSchema:
-            return BadRequest("Invalid url")
-        except UnidentifiedImageError:
-            return BadRequest("Url could not be formed to an image")
-        except ConnectionError:
-            return BadRequest("Site took too long to respond")
-
+    def on_request(self, image):
         width = self.query("width", float) or self.query("w", float)
         height = self.query("height", float) or self.query("h", float)
 

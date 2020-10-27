@@ -12,7 +12,7 @@ class GoogleHandler(Handler):
 
         self.queries = [(["query", "q"], str)]
 
-    def __call__(self):
+    def on_request(self):
         query = self.query("q") or self.query("query")
         if not query:
             return BadRequest("query not given")
