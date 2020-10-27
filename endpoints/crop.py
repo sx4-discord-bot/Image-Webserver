@@ -1,9 +1,7 @@
 from typing import Optional
 
-from PIL import ImageSequence
-
 from handlers.handler import SingleImageHandler
-from utility.image import get_image_response
+from utility.image import get_image_response, for_each_frame
 from utility.response import BadRequest
 
 
@@ -41,8 +39,6 @@ class CropHandler(SingleImageHandler):
         left = image_width / 2 - width / 2
         upper = image_height / 2 - height / 2
 
-        frames = []
-        for frame in ImageSequence.Iterator(image):
-            frames.append(frame.crop((left, upper, width + left, height + upper)))
+        frames = for_each_frame(image, lambda frame: frame.crop((left, upper, width + left, height + upper)))
 
         return get_image_response(frames)

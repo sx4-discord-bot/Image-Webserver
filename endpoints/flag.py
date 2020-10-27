@@ -1,10 +1,10 @@
 from io import BytesIO
 
 import requests
-from PIL import Image, ImageSequence
+from PIL import Image
 
 from handlers.handler import SingleImageHandler
-from utility.image import get_image_response, max_pixels
+from utility.image import get_image_response, max_pixels, for_each_frame
 from utility.response import BadRequest
 
 
@@ -25,10 +25,9 @@ class FlagHandler(SingleImageHandler):
         final_size = max_pixels(image.size, 200)
         flag_image = Image.open(BytesIO(flag_response.content)).convert("RGBA").resize(final_size)
 
-        frames = []
-        for frame in ImageSequence.Iterator(image):
+        def parse(frame):
             frame = frame.convert("RGBA").resize(final_size)
 
-            frames.append(Image.blend(frame, flag_image, 0.35))
+            return Image.blend(frame, flag_image, 0.35)
 
-        return get_image_response(frames, transparency=255)
+        return get_image_response(for_each_frame(image, parse), transparency=255)

@@ -1,9 +1,9 @@
 from io import BytesIO
 from math import ceil
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Callable
 
 import requests
-from PIL import Image, ImageOps, ImageDraw, ImageFont
+from PIL import Image, ImageOps, ImageDraw, ImageFont, ImageSequence
 from flask import Response, send_file
 
 IMAGE_ASSET_PATH = "resources/images/"
@@ -40,6 +40,14 @@ def max_pixels(image_size: Tuple[int, int], max_size: int) -> Tuple[int, int]:
 
     ratio = max(width, height) / max_size
     return ceil(width / ratio), ceil(height / ratio)
+
+
+def for_each_frame(image: Image, function: Callable[[type(Image)], type(Image)]) -> List[type(Image)]:
+    frames = []
+    for frame in ImageSequence.Iterator(image):
+        frames.append(function(frame))
+
+    return frames
 
 
 def get_image_response(frames: List[type(Image)], transparency: int = 0) -> Response:

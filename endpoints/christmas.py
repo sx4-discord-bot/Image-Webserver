@@ -1,9 +1,9 @@
 from math import sqrt
 
-from PIL import ImageSequence, Image
+from PIL import Image
 
 from handlers.handler import SingleImageHandler
-from utility.image import max_pixels, get_image_response
+from utility.image import max_pixels, get_image_response, for_each_frame
 
 
 class ChristmasHandler(SingleImageHandler):
@@ -11,8 +11,7 @@ class ChristmasHandler(SingleImageHandler):
     def on_request(self, image):
         final_size = max_pixels(image.size, 500)
 
-        frames = []
-        for frame in ImageSequence.Iterator(image):
+        def parse(frame: Image) -> Image:
             frame = frame.convert("RGBA").resize(final_size)
 
             pixels = frame.load()
@@ -29,6 +28,6 @@ class ChristmasHandler(SingleImageHandler):
             background = Image.new("RGBA", final_size, (255, 255, 255, 255))
             background.paste(frame, (0, 0), frame)
 
-            frames.append(background)
+            return background
 
-        return get_image_response(frames, transparency=255)
+        return get_image_response(for_each_frame(image, parse), transparency=255)

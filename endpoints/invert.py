@@ -1,7 +1,5 @@
-from PIL import ImageSequence
-
 from handlers.handler import SingleImageHandler
-from utility.image import get_image_response, max_pixels
+from utility.image import get_image_response, max_pixels, for_each_frame
 
 
 class InvertHandler(SingleImageHandler):
@@ -9,8 +7,7 @@ class InvertHandler(SingleImageHandler):
     def on_request(self, image):
         final_size = max_pixels(image.size, 500)
 
-        frames = []
-        for frame in ImageSequence.Iterator(image):
+        def parse(frame):
             frame = frame.convert("RGBA").resize(final_size)
 
             pixels = frame.load()
@@ -19,6 +16,6 @@ class InvertHandler(SingleImageHandler):
                     r, g, b, a = pixels[x, y]
                     pixels[x, y] = (255 - r, 255 - g, 255 - b, a)
 
-            frames.append(frame)
+            return frame
 
-        return get_image_response(frames, transparency=255)
+        return get_image_response(for_each_frame(image, parse), transparency=255)

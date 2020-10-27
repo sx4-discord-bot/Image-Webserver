@@ -1,9 +1,7 @@
 from typing import Optional
 
-from PIL import ImageSequence
-
 from handlers.handler import SingleImageHandler
-from utility.image import get_image_response
+from utility.image import get_image_response, for_each_frame
 from utility.response import BadRequest
 
 
@@ -33,8 +31,6 @@ class ResizeHandler(SingleImageHandler):
         if width < 1 or height < 1:
             return BadRequest("width or height is a negative number")
 
-        frames = []
-        for frame in ImageSequence.Iterator(image):
-            frames.append(frame.resize((width, height)))
+        frames = for_each_frame(image, lambda frame: frame.resize((width, height)))
 
         return get_image_response(frames)

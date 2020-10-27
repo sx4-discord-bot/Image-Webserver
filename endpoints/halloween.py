@@ -1,9 +1,7 @@
 from math import sqrt
 
-from PIL import ImageSequence
-
 from handlers.handler import SingleImageHandler
-from utility.image import max_pixels, get_image_response
+from utility.image import max_pixels, get_image_response, for_each_frame
 
 
 class HalloweenHandler(SingleImageHandler):
@@ -11,8 +9,7 @@ class HalloweenHandler(SingleImageHandler):
     def on_request(self, image):
         final_size = max_pixels(image.size, 500)
 
-        frames = []
-        for frame in ImageSequence.Iterator(image):
+        def parse(frame):
             frame = frame.convert("RGBA").resize(final_size)
 
             pixels = frame.load()
@@ -25,6 +22,6 @@ class HalloweenHandler(SingleImageHandler):
 
                     pixels[x, y] = (min(max(int(o), 0), 255), min(max(int((o - 10) / 2), 0), 255), 0, a)
 
-            frames.append(frame)
+            return frame
 
-        return get_image_response(frames, transparency=255)
+        return get_image_response(for_each_frame(image, parse), transparency=255)

@@ -1,7 +1,7 @@
-from PIL import ImageSequence, ImageFilter
+from PIL import ImageFilter
 
 from handlers.handler import SingleImageHandler
-from utility.image import get_image_response
+from utility.image import get_image_response, for_each_frame
 
 
 class EmbossHandler(SingleImageHandler):
@@ -9,8 +9,6 @@ class EmbossHandler(SingleImageHandler):
     def on_request(self, image):
         filter = ImageFilter.EMBOSS
 
-        frames = []
-        for frame in ImageSequence.Iterator(image):
-            frames.append(frame.convert("RGBA").filter(filter))
+        frames = for_each_frame(image, lambda frame: frame.convert("RGBA").filter(filter))
 
         return get_image_response(frames)
