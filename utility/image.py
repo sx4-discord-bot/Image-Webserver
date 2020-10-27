@@ -1,6 +1,6 @@
 from io import BytesIO
 from math import ceil
-from typing import Optional, Tuple, List, Callable
+from typing import Tuple, List, Callable
 
 import requests
 from PIL import Image, ImageOps, ImageDraw, ImageFont, ImageSequence
@@ -51,7 +51,8 @@ def for_each_frame(image: Image, function: Callable[[type(Image)], type(Image)])
 
 
 def get_image_response(frames: List[type(Image)], transparency: int = 0) -> Response:
-    png = len(frames) == 1
+    frame_count = len(frames)
+    png = frame_count == 1
     f = "png" if png else "gif"
 
     first_frame = frames[0]
@@ -67,5 +68,6 @@ def get_image_response(frames: List[type(Image)], transparency: int = 0) -> Resp
     response = send_file(b, mimetype=f"image/{f}")
     response.headers["width"] = first_frame.size[0]
     response.headers["height"] = first_frame.size[1]
+    response.headers["frames"] = frame_count
 
     return response

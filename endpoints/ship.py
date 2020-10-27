@@ -1,12 +1,12 @@
 from PIL import Image, UnidentifiedImageError
 from requests.exceptions import MissingSchema, ConnectionError
 
-from handlers.handler import Handler
+from handlers.handler import GetHandler
 from utility.image import create_avatar, get_image_asset, get_image_response, get_image
 from utility.response import BadRequest
 
 
-class ShipHandler(Handler):
+class ShipHandler(GetHandler):
 
     def __init__(self, app):
         super().__init__(app)

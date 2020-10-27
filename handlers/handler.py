@@ -15,7 +15,7 @@ class Handler:
         self.app = app
         self.aliases = []
         self.queries = []
-        self.methods = ["GET"]
+        self.bodies = []
         self.name = self.__module__.split(".")[-1]  # -1 in case the root of the file changes
 
     def __call__(self):
@@ -30,8 +30,27 @@ class Handler:
     def header(self, header: str, type: Type[Any] = str) -> Any:
         return self.request.headers.get(header, type=type)
 
+    def body(self, key: str, type: Type[Any] = str) -> Any:
+        return self.request.json.get(key, type=type)
 
-class SingleImageHandler(Handler):
+
+class GetHandler(Handler):
+
+    def __init__(self, app):
+        super().__init__(app)
+
+        self.methods = ["GET"]
+
+
+class PostHandler(Handler):
+
+    def __init__(self, app):
+        super().__init__(app)
+
+        self.methods = ["POST"]
+
+
+class SingleImageHandler(GetHandler):
 
     def __init__(self, app):
         super().__init__(app)

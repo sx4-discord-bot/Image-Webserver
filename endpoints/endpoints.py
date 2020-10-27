@@ -1,9 +1,9 @@
 from typing import Type, Tuple, Any, List
 
-from handlers.handler import Handler
+from handlers.handler import GetHandler
 
 
-class EndpointsHandler(Handler):
+class EndpointsHandler(GetHandler):
 
     def format_queries(self, queries: List[Tuple[List[str], Type[Any]]]) -> str:
         builder = []
@@ -37,7 +37,15 @@ class EndpointsHandler(Handler):
             builder.append("Aliases: ")
             builder.append("None" if len(endpoint.aliases) == 0 else ", ".join(endpoint.aliases))
             builder.append("<br/>")
-            builder.append("Queries: ")
-            builder.append(self.format_queries(endpoint.queries))
+
+            queries = endpoint.queries
+            if len(queries) != 0:
+                builder.append("Queries: ")
+                builder.append(self.format_queries(queries))
+
+            bodies = endpoint.bodies
+            if len(bodies) != 0:
+                builder.append("Bodies: ")
+                builder.append(self.format_queries(bodies))
 
         return "".join(builder)
