@@ -1,7 +1,7 @@
-from PIL import ImageSequence, Image
+from PIL import ImageSequence, Image, UnidentifiedImageError
 from requests.exceptions import MissingSchema, ConnectionError
 
-from handler import Handler
+from handlers.handler import Handler
 from utility.image import get_image, get_image_asset, get_image_response
 
 from utility.response import BadRequest
@@ -22,6 +22,8 @@ class HotHandler(Handler):
         try:
             image = get_image(image_url)
         except MissingSchema:
+            return BadRequest("Invalid url")
+        except UnidentifiedImageError:
             return BadRequest("Url could not be formed to an image")
         except ConnectionError:
             return BadRequest("Site took too long to respond")

@@ -9,7 +9,7 @@ from utility.response import Unauthorized, InternalError, NotFound
 
 config = json.load(open("config.json"))
 
-app = Flask(__name__, static_folder=os.path.abspath("../static"))
+app = Flask(__name__)
 
 app.endpoints = []
 
@@ -18,11 +18,12 @@ for file in os.listdir("endpoints"):
         continue
 
     file = file[:-3]
+    path = f"endpoints.{file}"
 
-    __import__(f"endpoints.{file}")
+    __import__(path)
 
-    for name, obj in inspect.getmembers(sys.modules[f"endpoints.{file}"]):
-        if inspect.isclass(obj) and name != "Handler" and "Handler" in name:
+    for name, obj in inspect.getmembers(sys.modules[path], inspect.isclass):
+        if obj.__module__ == path:
             handler = obj(app)
 
             app.endpoints.append(handler)

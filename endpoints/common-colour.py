@@ -1,9 +1,10 @@
 import json
 
+from PIL import UnidentifiedImageError
 from flask import Response
 from requests.exceptions import MissingSchema, ConnectionError
 
-from handler import Handler
+from handlers.handler import Handler
 from utility.colour import as_rgb
 from utility.image import get_image
 from utility.response import BadRequest
@@ -25,6 +26,8 @@ class CommonColourHandler(Handler):
         try:
             image = get_image(image_url)
         except MissingSchema:
+            return BadRequest("Invalid url")
+        except UnidentifiedImageError:
             return BadRequest("Url could not be formed to an image")
         except ConnectionError:
             return BadRequest("Site took too long to respond")

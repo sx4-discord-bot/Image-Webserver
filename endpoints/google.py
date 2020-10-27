@@ -1,6 +1,6 @@
 from PIL import ImageDraw
 
-from handler import Handler
+from handlers.handler import Handler
 from utility.image import get_image_asset, get_font_asset, get_image_response
 from utility.response import BadRequest
 

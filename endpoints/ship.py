@@ -1,7 +1,7 @@
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from requests.exceptions import MissingSchema, ConnectionError
 
-from handler import Handler
+from handlers.handler import Handler
 from utility.image import create_avatar, get_image_asset, get_image_response, get_image
 from utility.response import BadRequest
 
@@ -21,9 +21,11 @@ class ShipHandler(Handler):
         try:
             first_image = get_image(first_image_url)
         except MissingSchema:
+            return BadRequest("Invalid first url")
+        except UnidentifiedImageError:
             return BadRequest("First url could not be formed to an image")
         except ConnectionError:
-            return BadRequest("Site for first url took too long to respond")
+            return BadRequest("Site took too long to respond")
 
         second_image_url = self.query("second_image")
         if not second_image_url:
@@ -32,9 +34,11 @@ class ShipHandler(Handler):
         try:
             second_image = get_image(second_image_url)
         except MissingSchema:
+            return BadRequest("Invalid second url")
+        except UnidentifiedImageError:
             return BadRequest("Second url could not be formed to an image")
         except ConnectionError:
-            return BadRequest("Site for second url took too long to respond")
+            return BadRequest("Site took too long to respond")
 
         percent = self.query("percent", int)
         if not percent:

@@ -2,7 +2,7 @@ from typing import Optional
 
 from PIL import Image
 
-from handler import Handler
+from handlers.handler import Handler
 from utility.colour import as_rgb_tuple
 from utility.image import get_image_response
 from utility.response import BadRequest

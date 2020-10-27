@@ -1,6 +1,6 @@
 from io import BytesIO
 from math import ceil
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 import requests
 from PIL import Image, ImageOps, ImageDraw, ImageFont
@@ -42,7 +42,7 @@ def max_pixels(image_size: Tuple[int, int], max_size: int) -> Tuple[int, int]:
     return ceil(width / ratio), ceil(height / ratio)
 
 
-def get_image_response(frames: [Image], transparency: int = 0) -> Response:
+def get_image_response(frames: List[type(Image)], transparency: int = 0) -> Response:
     png = len(frames) == 1
     f = "png" if png else "gif"
 
@@ -52,8 +52,7 @@ def get_image_response(frames: [Image], transparency: int = 0) -> Response:
     if png:
         first_frame.save(b, format=f)
     else:
-        first_frame.save(b, format=f, save_all=True, append_images=frames[1:], loop=0, optimize=True, disposal=2,
-                         transparency=transparency)
+        first_frame.save(b, format=f, save_all=True, append_images=frames[1:], loop=0, optimize=True, disposal=2, transparency=transparency)
 
     b.seek(0)
 

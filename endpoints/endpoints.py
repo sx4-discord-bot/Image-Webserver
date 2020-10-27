@@ -1,6 +1,6 @@
-from typing import Type, Tuple, Any
+from typing import Type, Tuple, Any, List
 
-from handler import Handler
+from handlers.handler import Handler
 
 
 class EndpointsHandler(Handler):
@@ -8,7 +8,7 @@ class EndpointsHandler(Handler):
     def __init__(self, app):
         super().__init__(app)
 
-    def format_queries(self, queries: [Tuple[str, Type[Any]]]) -> str:
+    def format_queries(self, queries: List[Tuple[List[str], Type[Any]]]) -> str:
         builder = []
         for i, (names, t) in enumerate(queries):
             builder.append(f"{' or '.join(names)}: <span style=\"color:red;\">")
