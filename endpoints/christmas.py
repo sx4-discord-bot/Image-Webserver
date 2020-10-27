@@ -11,7 +11,7 @@ class ChristmasHandler(SingleImageHandler):
     def on_request(self, image):
         final_size = max_pixels(image.size, 500)
 
-        def parse(frame: Image) -> Image:
+        def parse(frame):
             frame = frame.convert("RGBA").resize(final_size)
 
             pixels = frame.load()

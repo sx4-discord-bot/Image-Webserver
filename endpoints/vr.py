@@ -1,7 +1,7 @@
-from PIL import ImageSequence, Image
+from PIL import Image
 
 from handlers.handler import SingleImageHandler
-from utility.image import get_image_asset, get_image_response
+from utility.image import get_image_asset, get_image_response, for_each_frame
 
 
 class VrHandler(SingleImageHandler):
@@ -10,14 +10,13 @@ class VrHandler(SingleImageHandler):
         background = get_image_asset("vr.png")
         blank = Image.new("RGBA", background.size, (255, 255, 255, 0))
 
-        frames = []
-        for frame in ImageSequence.Iterator(image):
+        def parse(frame):
             frame = frame.convert("RGBA").resize((225, 135))
 
-            blank = blank.copy()
-            blank.paste(frame, (15, 300), frame)
-            blank.paste(background, (0, 0), background)
+            copy = blank.copy()
+            copy.paste(frame, (15, 300), frame)
+            copy.paste(background, (0, 0), background)
 
-            frames.append(blank)
+            return copy
 
-        return get_image_response(frames, transparency=255)
+        return get_image_response(for_each_frame(image, parse), transparency=255)

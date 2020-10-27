@@ -1,7 +1,7 @@
-from PIL import ImageSequence, ImageFilter
+from PIL import ImageFilter
 
 from handlers.handler import SingleImageHandler
-from utility.image import get_image_asset, get_image_response
+from utility.image import get_image_asset, get_image_response, for_each_frame
 
 
 class TrashHandler(SingleImageHandler):
@@ -11,13 +11,12 @@ class TrashHandler(SingleImageHandler):
 
         filter = ImageFilter.GaussianBlur(10)
 
-        frames = []
-        for frame in ImageSequence.Iterator(image):
+        def parse(frame):
             frame = frame.convert("RGBA").resize((385, 384)).filter(filter)
 
-            background = background.copy()
-            background.paste(frame, (384, 0), frame)
+            copy = background.copy()
+            copy.paste(frame, (384, 0), frame)
 
-            frames.append(background)
+            return copy
 
-        return get_image_response(frames)
+        return get_image_response(for_each_frame(image, parse))

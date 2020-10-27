@@ -1,7 +1,7 @@
-from PIL import Image, ImageSequence
+from PIL import Image
 
 from handlers.handler import SingleImageHandler
-from utility.image import get_image_asset, get_image_response
+from utility.image import get_image_asset, get_image_response, for_each_frame
 
 
 class ShitHandler(SingleImageHandler):
@@ -10,14 +10,13 @@ class ShitHandler(SingleImageHandler):
         blank = Image.new("RGBA", (763, 1000), (255, 255, 255, 0))
         background = get_image_asset("shit-meme.png")
 
-        frames = []
-        for frame in ImageSequence.Iterator(image):
+        def parse(frame):
             frame = frame.convert("RGBA").resize((185, 185)).rotate(50, expand=True)
 
-            blank = blank.copy()
-            blank.paste(frame, (215, 675), frame)
-            blank.paste(background, (0, 0), background)
+            copy = blank.copy()
+            copy.paste(frame, (215, 675), frame)
+            copy.paste(background, (0, 0), background)
 
-            frames.append(blank)
+            return copy
 
-        return get_image_response(frames, transparency=255)
+        return get_image_response(for_each_frame(image, parse), transparency=255)

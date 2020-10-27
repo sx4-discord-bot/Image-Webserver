@@ -1,7 +1,5 @@
-from PIL import ImageSequence
-
 from handlers.handler import SingleImageHandler
-from utility.image import get_image_asset, get_image_response
+from utility.image import get_image_asset, get_image_response, for_each_frame
 
 
 class FearHandler(SingleImageHandler):
@@ -9,13 +7,12 @@ class FearHandler(SingleImageHandler):
     def on_request(self, image):
         background = get_image_asset("fear-meme.png")
 
-        frames = []
-        for frame in ImageSequence.Iterator(image):
+        def parse(frame):
             frame = frame.convert("RGBA").resize((251, 251))
 
-            background = background.copy()
-            background.paste(frame, (260, 517), frame)
+            copy = background.copy()
+            copy.paste(frame, (260, 517), frame)
 
-            frames.append(background)
+            return copy
 
-        return get_image_response(frames)
+        return get_image_response(for_each_frame(image, parse))
