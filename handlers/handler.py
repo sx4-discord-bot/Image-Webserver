@@ -4,7 +4,7 @@ from PIL import UnidentifiedImageError
 from flask import Response, request
 from requests.exceptions import MissingSchema, ConnectionError
 
-from utility.image import get_image
+from utility.image import get_image, get_image_response, for_each_frame
 from utility.response import BadRequest
 
 
@@ -74,4 +74,17 @@ class SingleImageHandler(GetHandler):
         return self.on_request(image)
 
     def on_request(self, image):
+        pass
+
+
+class ImageFilterHandler(SingleImageHandler):
+
+    def on_request(self, image):
+        filter = self.filter()
+
+        frames = for_each_frame(image, lambda frame: frame.convert("RGBA").filter(filter))
+
+        return get_image_response(frames, transparency=255)
+
+    def filter(self):
         pass

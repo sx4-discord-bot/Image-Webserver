@@ -11,7 +11,7 @@ class ShipHandler(GetHandler):
     def __init__(self, app):
         super().__init__(app)
 
-        self.queries = [(["image"], str), (["percent"], int)]
+        self.queries = [(["first_image"], str), (["second_image"], str), (["percent"], int)]
 
     def on_request(self):
         first_image_url = self.query("first_image")
