@@ -15,7 +15,7 @@ class Handler:
         self.app = app
         self.aliases = []
         self.queries = []
-        self.bodies = []
+        self.fields = []
         self.name = self.__module__.split(".")[-1]  # -1 in case the root of the file changes
 
     def __call__(self):

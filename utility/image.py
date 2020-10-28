@@ -23,7 +23,7 @@ def get_font_asset(path: str, size: int) -> ImageFont:
 
 
 def create_avatar(image: Image) -> Image:
-    mask = Image.new('L', image.size, 0)
+    mask = Image.new("L", image.size, 0)
     draw = ImageDraw.Draw(mask)
     draw.ellipse((0, 0) + image.size, fill=255)
 
@@ -61,7 +61,8 @@ def get_image_response(frames: List[type(Image)], transparency: int = 0) -> Resp
     if png:
         first_frame.save(b, format=f)
     else:
-        first_frame.save(b, format=f, save_all=True, append_images=frames[1:], loop=0, optimize=True, disposal=2, transparency=transparency)
+        first_frame.save(b, format=f, save_all=True, append_images=frames[1:], loop=0, optimize=True, disposal=2,
+                         transparency=transparency)
 
     b.seek(0)
 

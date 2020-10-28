@@ -43,9 +43,9 @@ class EndpointsHandler(GetHandler):
                 builder.append("Queries: ")
                 builder.append(self.format_queries(queries))
 
-            bodies = endpoint.bodies
-            if len(bodies) != 0:
-                builder.append("Bodies: ")
-                builder.append(self.format_queries(bodies))
+            fields = endpoint.fields
+            if len(fields) != 0:
+                builder.append("Fields: ")
+                builder.append(self.format_queries(fields))
 
         return "".join(builder)
