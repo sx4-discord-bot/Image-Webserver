@@ -1,6 +1,6 @@
-from typing import Any, Type
+from typing import Any, Type, List
 
-from PIL import UnidentifiedImageError
+from PIL import UnidentifiedImageError, Image
 from flask import Response, request
 from requests.exceptions import MissingSchema, ConnectionError
 
@@ -50,31 +50,48 @@ class PostHandler(Handler):
         self.methods = ["POST"]
 
 
-class SingleImageHandler(GetHandler):
-
-    def __init__(self, app):
-        super().__init__(app)
-
-        self.queries = [(["image"], str)]
+class MultipleImageHandler(GetHandler):
 
     def __call__(self):
-        image_url = self.query("image")
-        if not image_url:
-            return BadRequest("Image query not given")
+        images = []
+        for name in self.image_queries():
+            query = self.query(name)
+            if not query:
+                return BadRequest(f"{name} query not given")
 
-        try:
-            image = get_image(image_url)
-        except MissingSchema:
-            return BadRequest("Invalid url")
-        except UnidentifiedImageError:
-            return BadRequest("Url could not be formed to an image")
-        except ConnectionError:
-            return BadRequest("Site took too long to respond")
+            try:
+                image = get_image(query)
+            except MissingSchema:
+                return BadRequest(f"Invalid url given for {name}")
+            except UnidentifiedImageError:
+                return BadRequest(f"{name} could not be formed to an image")
+            except ConnectionError:
+                return BadRequest(f"Site took too long to respond for {name}")
 
-        return self.on_request(image)
+            images.append(image)
 
-    def on_request(self, image):
+        return self.on_request(self.modify_images(images))
+
+    def on_request(self, images: List[type(Image)]):
         pass
+
+    def image_queries(self) -> List[str]:
+        pass
+
+    def modify_images(self, images: List[type(Image)]) -> Any:
+        return images
+
+
+class SingleImageHandler(MultipleImageHandler):
+
+    def on_request(self, image: Image):
+        pass
+
+    def image_queries(self):
+        return ["image"]
+
+    def modify_images(self, images: List[type(Image)]) -> Any:
+        return images[0]
 
 
 class ImageFilterHandler(SingleImageHandler):
