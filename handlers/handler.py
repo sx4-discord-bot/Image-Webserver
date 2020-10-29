@@ -84,6 +84,11 @@ class MultipleImageHandler(GetHandler):
 
 class SingleImageHandler(MultipleImageHandler):
 
+    def __init__(self, app):
+        super().__init__(app)
+
+        self.queries = [(["image"], str)]
+
     def on_request(self, image: Image):
         pass
 

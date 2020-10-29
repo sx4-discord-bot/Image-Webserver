@@ -1,10 +1,9 @@
 from typing import List, Any
 
-from PIL import Image, UnidentifiedImageError
-from requests.exceptions import MissingSchema, ConnectionError
+from PIL import Image
 
 from handlers.handler import MultipleImageHandler
-from utility.image import create_avatar, get_image_asset, get_image_response, get_image
+from utility.image import create_avatar, get_image_asset, get_image_response
 from utility.response import BadRequest
 
 
