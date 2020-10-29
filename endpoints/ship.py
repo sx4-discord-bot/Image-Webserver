@@ -16,7 +16,6 @@ class ShipHandler(MultipleImageHandler):
         self.queries = [(["first_image"], str), (["second_image"], str), (["percent"], int)]
 
     def on_request(self, images: List[type(Image)]):
-        print(images)
         first_image, second_image = images
 
         percent = self.query("percent", int)
