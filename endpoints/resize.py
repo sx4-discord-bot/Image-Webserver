@@ -17,7 +17,7 @@ class ResizeHandler(SingleImageHandler):
         height = self.query("height", float) or self.query("h", float)
 
         if not width and not height:
-            return BadRequest("width and height query not given")
+            raise BadRequest("width and height query not given")
 
         width = width if width else image.size[0]
         height = height if height else image.size[1]
@@ -29,7 +29,7 @@ class ResizeHandler(SingleImageHandler):
             height = round(height * image.size[1])
 
         if width < 1 or height < 1:
-            return BadRequest("width or height is a negative number")
+            raise BadRequest("width or height is a negative number")
 
         frames = for_each_frame(image, lambda frame: frame.resize((width, height)))
 

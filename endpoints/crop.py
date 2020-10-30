@@ -19,7 +19,7 @@ class CropHandler(SingleImageHandler):
         height = self.query("height", float) or self.query("h", float)
 
         if not width and not height:
-            return BadRequest("width and height query not given")
+            raise BadRequest("width and height query not given")
 
         width = width if width else image_width
         height = height if height else image_height
@@ -31,10 +31,10 @@ class CropHandler(SingleImageHandler):
             height = round(height * image_height)
 
         if width < 1 or height < 1:
-            return BadRequest("width or height is a negative number")
+            raise BadRequest("width or height is a negative number")
 
         if width > image_width or height > image_height:
-            return BadRequest("width or height is larger than original width/height")
+            raise BadRequest("width or height is larger than original width/height")
 
         left = image_width / 2 - width / 2
         upper = image_height / 2 - height / 2

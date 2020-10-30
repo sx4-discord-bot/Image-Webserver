@@ -16,7 +16,7 @@ class HueHandler(SingleImageHandler):
     def on_request(self, image):
         frame_count = self.query("frames", int) or 60
         if frame_count > 100:
-            return BadRequest("Frame count cannot be more than 100")
+            raise BadRequest("Frame count cannot be more than 100")
 
         final_size = max_pixels(image.size, 100)
         image = image.convert("RGBA").resize(final_size)

@@ -3,9 +3,9 @@ import json
 import os
 import sys
 
-from flask import Flask, request
+from flask import Flask, request, Request
 
-from utility.response import Unauthorized, InternalError, NotFound
+from utility.response import InternalError, NotFound, MethodNotAllowed, BadRequest, JsonException
 
 config = json.load(open("config.json"))
 
@@ -48,13 +48,29 @@ def before_request_check():
 
 @app.errorhandler(404)
 def not_found(error):
-    return NotFound("You've reached a dead end, turn around")
+    raise NotFound("You've reached a dead end, turn around")
 
 
-@app.errorhandler(500)
-def internal_error(error):
-    return InternalError("An internal error occurred please report this to the developers")
+@app.errorhandler(405)
+def method_not_allowed(error):
+    raise MethodNotAllowed(f"{request.method} is not allowed on this endpoint")
 
+
+@app.errorhandler(Exception)
+def default_error_handler(error):
+    return JsonException(500, "An unknown error occurred", {"error": str(error)}).as_response()
+
+
+@app.errorhandler(JsonException)
+def error_handler(error):
+    return error.as_response()
+
+
+def on_json_loading_failed(x, y):
+    raise BadRequest("Invalid json in body")
+
+
+Request.on_json_loading_failed = on_json_loading_failed
 
 if __name__ == "__main__":
     app.run("0.0.0.0", 8443)

@@ -19,7 +19,7 @@ class ColourHandler(GetHandler):
     def on_request(self):
         colour = self.query("colour", int)
         if not colour:
-            return BadRequest("colour query not given or not valid")
+            raise BadRequest("colour query not given or not valid")
 
         width = self.query("width", int) or self.query("w", int) or 100
         height = self.query("height", int) or self.query("h", int) or 100

@@ -5,17 +5,24 @@ from handlers.handler import GetHandler
 
 class EndpointsHandler(GetHandler):
 
+    def format_query(self, t):
+        builder = []
+        if hasattr(t, "__args__"):
+            args = t.__args__
+            if len(args) == 2 and args[1] is type(None):
+                builder.append(f"{self.format_query(args[0])}?")
+            elif len(args) == 1:
+                builder.append(f"[{args[0].__name__}]")
+        else:
+            builder.append(t.__name__)
+
+        return "".join(builder)
+
     def format_queries(self, queries: List[Tuple[List[str], Type[Any]]]) -> str:
         builder = []
         for i, (names, t) in enumerate(queries):
             builder.append(f"{' or '.join(names)}: <span style=\"color:red;\">")
-            if hasattr(t, "__args__"):
-                args = t.__args__
-                if len(args) == 2 and args[1] is type(None):
-                    builder.append(f"{args[0].__name__}?")
-            else:
-                builder.append(t.__name__)
-
+            builder.append(self.format_query(t))
             builder.append("</span>")
 
             if i != len(queries) - 1:

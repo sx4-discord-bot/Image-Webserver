@@ -24,14 +24,17 @@ class Handler:
     def on_request(self, *args):
         return Response(status=204)
 
-    def query(self, query: str, type: Type[Any] = str) -> Any:
-        return self.request.args.get(query, type=type)
+    def query(self, query: str, type: Type[Any] = str, default: Any = None) -> Any:
+        return self.request.args.get(query, type=type, default=default)
 
-    def header(self, header: str, type: Type[Any] = str) -> Any:
-        return self.request.headers.get(header, type=type)
+    def header(self, header: str, type: Type[Any] = str, default: Any = None) -> Any:
+        return self.request.headers.get(header, type=type, default=default)
 
-    def body(self, key: str, type: Type[Any] = str) -> Any:
-        return self.request.json.get(key, type=type)
+    def body(self, key: str, type: Type[Any] = str, default: Any = None) -> Any:
+        try:
+            return type(self.request.json.get(key, default))
+        except ValueError:
+            raise BadRequest(f"{key} is meant to be a {type.__name__}")
 
 
 class GetHandler(Handler):
@@ -49,6 +52,12 @@ class PostHandler(Handler):
 
         self.methods = ["POST"]
 
+    def __call__(self):
+        if not self.request.is_json:
+            raise BadRequest("Body has to be json")
+
+        return self.on_request()
+
 
 class MultipleImageHandler(GetHandler):
 
@@ -57,16 +66,16 @@ class MultipleImageHandler(GetHandler):
         for name in self.image_queries():
             query = self.query(name)
             if not query:
-                return BadRequest(f"{name} query not given")
+                raise BadRequest(f"{name} query not given")
 
             try:
                 image = get_image(query)
             except MissingSchema:
-                return BadRequest(f"Invalid url given for {name}")
+                raise BadRequest(f"Invalid url given for {name}")
             except UnidentifiedImageError:
-                return BadRequest(f"{name} could not be formed to an image")
+                raise BadRequest(f"{name} could not be formed to an image")
             except ConnectionError:
-                return BadRequest(f"Site took too long to respond for {name}")
+                raise BadRequest(f"Site took too long to respond for {name}")
 
             images.append(image)
 

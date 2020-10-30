@@ -20,7 +20,7 @@ class FlagHandler(SingleImageHandler):
 
         flag_response = requests.get(f"http://www.geonames.org/flags/x/{flag}.gif", stream=True)
         if flag_response.status_code == 404:
-            return BadRequest("Invalid flag code")
+            raise BadRequest("Invalid flag code")
 
         final_size = max_pixels(image.size, 200)
         flag_image = Image.open(BytesIO(flag_response.content)).convert("RGBA").resize(final_size)
