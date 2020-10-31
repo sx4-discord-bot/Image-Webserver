@@ -3,15 +3,81 @@ from math import ceil
 from typing import Tuple, List, Callable
 
 import requests
-from PIL import Image, ImageOps, ImageDraw, ImageFont, ImageSequence
+from PIL import Image, ImageOps, ImageDraw, ImageFont, ImageSequence, UnidentifiedImageError
 from flask import Response, send_file
+from requests.exceptions import MissingSchema, ConnectionError
+
+from utility.response import BadRequest
 
 IMAGE_ASSET_PATH = "resources/images/"
 FONT_ASSET_PATH = "resources/fonts/"
 
 
-def get_image(url: str) -> Image:
-    return Image.open(BytesIO(requests.get(url, stream=True).content))
+def get_text_array(text: str, font: ImageFont, max_width: int) -> List[str]:
+    text_split = text.strip().split(" ")
+
+    width = 0
+    lines, builder = [], []
+    for i, word in enumerate(text_split):
+        n = 0
+
+        word += " "
+        word_length, (word_width, word_height) = len(word), font.getsize(word)
+        if word_width + width > max_width:
+            iteration = 0
+            while True:
+                cut_word = word[n:word_length]
+
+                cut_word_width, cut_word_height = font.getsize(cut_word)
+                if cut_word_width + width > max_width:
+                    word_length -= 1
+                else:
+                    if word_length == len(word):
+                        builder.append(cut_word)
+                        width = cut_word_width
+                        break
+                    elif iteration == 0 and width != 0:
+                        builder.append(cut_word)
+                        lines.append("".join(builder))
+                        builder = []
+                        width = 0
+                        n = word_length
+                        word_length = len(word)
+                    else:
+                        n = word_length
+                        word_length = len(word)
+                        lines.append(cut_word)
+                        width = 0
+
+                    iteration += 1
+        else:
+            width += word_width
+            if width > max_width:
+                lines.append("".join(builder))
+                builder = [word]
+                width = word_width
+            else:
+                builder.append(word)
+
+            if i == len(text_split) - 1:
+                lines.append("".join(builder))
+
+    return lines
+
+
+def get_text_newlined(text: str, font: ImageFont, max_width: int) -> str:
+    return "\n".join(get_text_array(text, font, max_width))
+
+
+def get_image(url: str, name: str, name_type: str) -> Image:
+    try:
+        return Image.open(BytesIO(requests.get(url, stream=True).content))
+    except MissingSchema:
+        raise BadRequest(f"Invalid url given for the {name_type} {name}")
+    except UnidentifiedImageError:
+        raise BadRequest(f"The {name_type} {name} could not be formed to an image")
+    except ConnectionError:
+        raise BadRequest(f"Site took too long to respond for the {name_type} {name}")
 
 
 def get_image_asset(path: str) -> Image:

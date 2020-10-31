@@ -8,11 +8,6 @@ from utility.image import get_image_asset, get_image_response
 
 class WhoWouldWinHandler(MultipleImageHandler):
 
-    def __init__(self, app):
-        super().__init__(app)
-
-        self.queries = [(["first_image", str]), (["second_image"], str)]
-
     def on_request(self, images: List[type(Image)]):
         first_image, second_image = images
 
@@ -23,8 +18,8 @@ class WhoWouldWinHandler(MultipleImageHandler):
 
         return get_image_response([background])
 
-    def image_queries(self) -> List[str]:
-        return ["first_image", "second_image"]
+    def image_queries(self):
+        return [("first_image", False), ("second_image", False)]
 
     def modify_images(self, images: List[type(Image)]) -> Any:
         return [image.convert("RGBA").resize((400, 400)) for image in images]

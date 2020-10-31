@@ -12,15 +12,12 @@ class ShipHandler(MultipleImageHandler):
     def __init__(self, app):
         super().__init__(app)
 
-        self.queries = [(["first_image"], str), (["second_image"], str), (["percent"], int)]
+        self.queries += [(["percent"], int)]
 
     def on_request(self, images: List[type(Image)]):
         first_image, second_image = images
 
         percent = self.query("percent", int)
-        if not percent:
-            raise BadRequest("Percent query is not a number or not given")
-
         if percent > 100 or percent < 1:
             raise BadRequest("Percent cannot be larger than 100 or less than 1")
 
@@ -44,7 +41,7 @@ class ShipHandler(MultipleImageHandler):
         return get_image_response([blank])
 
     def image_queries(self):
-        return ["first_image", "second_image"]
+        return [("first_image", False), ("second_image", False)]
 
     def modify_images(self, images: List[type(Image)]) -> Any:
         return [create_avatar(image.convert("RGBA").resize((280, 280))) for image in images]

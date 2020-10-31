@@ -14,8 +14,6 @@ class GoogleHandler(GetHandler):
 
     def on_request(self):
         query = self.query("q") or self.query("query")
-        if not query:
-            raise BadRequest("query not given")
 
         length = len(query)
 

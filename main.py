@@ -2,6 +2,7 @@ import inspect
 import json
 import os
 import sys
+import traceback
 
 from flask import Flask, request, Request
 
@@ -46,24 +47,25 @@ def before_request_check():
     # return Unauthorized("Invalid authorization header")
 
 
+@app.errorhandler(JsonException)
+def error_handler(error):
+    return error.as_response()
+
+
 @app.errorhandler(404)
 def not_found(error):
-    raise NotFound("You've reached a dead end, turn around")
+    return NotFound("You've reached a dead end, turn around").as_response()
 
 
 @app.errorhandler(405)
 def method_not_allowed(error):
-    raise MethodNotAllowed(f"{request.method} is not allowed on this endpoint")
+    return MethodNotAllowed(f"{request.method} is not allowed on this endpoint").as_response()
 
 
 @app.errorhandler(Exception)
-def default_error_handler(error):
-    return JsonException(500, "An unknown error occurred", {"error": str(error)}).as_response()
-
-
-@app.errorhandler(JsonException)
 def error_handler(error):
-    return error.as_response()
+    traceback.print_exc()
+    return JsonException(500, "An unknown error occurred", {"error": str(error)}).as_response()
 
 
 def on_json_loading_failed(x, y):

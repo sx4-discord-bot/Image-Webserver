@@ -36,6 +36,9 @@ class CropHandler(SingleImageHandler):
         if width > image_width or height > image_height:
             raise BadRequest("width or height is larger than original width/height")
 
+        width = int(width)
+        height = int(height)
+
         left = image_width / 2 - width / 2
         upper = image_height / 2 - height / 2
 
