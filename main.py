@@ -1,14 +1,11 @@
 import inspect
-import json
 import os
 import sys
 import traceback
 
 from flask import Flask, request, Request
 
-from utility.response import InternalError, NotFound, MethodNotAllowed, BadRequest, JsonException
-
-config = json.load(open("config.json"))
+from utility.response import NotFound, MethodNotAllowed, BadRequest, JsonException
 
 app = Flask(__name__)
 
@@ -34,17 +31,6 @@ for file in os.listdir("endpoints"):
                 app.add_url_rule(f"/api/{alias}", alias, handler)
 
             break
-
-
-@app.before_request
-def before_request_check():
-    pass
-    # authorization = request.headers.get("authorization")
-    # if not authorization:
-    # return Unauthorized("Authorization header not given")
-
-    # if authorization != config["auth"]:
-    # return Unauthorized("Invalid authorization header")
 
 
 @app.errorhandler(JsonException)

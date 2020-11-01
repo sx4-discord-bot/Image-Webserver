@@ -1,9 +1,14 @@
 from typing import Type, Tuple, Any, List
 
-from handlers.handler import GetHandler
+from handlers.handler import Handler
 
 
-class EndpointsHandler(GetHandler):
+class EndpointsHandler(Handler):
+
+    def __init__(self, app):
+        super().__init__(app)
+
+        self.require_authorization = False
 
     def format_query(self, t):
         builder = []

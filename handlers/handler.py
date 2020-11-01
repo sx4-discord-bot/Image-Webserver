@@ -1,29 +1,51 @@
+import json
 from functools import wraps
 from typing import Any, Type, List, Tuple
 
-from PIL import UnidentifiedImageError, Image
-from flask import Response, request
-from requests.exceptions import MissingSchema, ConnectionError
+from PIL import Image
+from flask import request
 
 from utility.image import get_image, get_image_response, for_each_frame
-from utility.response import BadRequest
+from utility.response import BadRequest, Unauthorized
+
+config = json.load(open("config.json"))
+
+
+def check_names(t, names, queries, name_type):
+    for name in names:
+        if hasattr(t, "__args__"):
+            args = t.__args__
+            if len(args) == 2 and args[1] is type(None):
+                return
+
+        if name not in queries:
+            raise BadRequest(f"{name} is not given as a {name_type}")
+
+
+def check_authorization(f):
+    @wraps(f)
+    def wrapper(self):
+        if not self.require_authorization or self.request.remote_addr in self.config["whitelisted_ips"]:
+            return f(self)
+
+        authorization = request.headers.get("authorization")
+        if not authorization:
+            raise Unauthorized("Authorization header not given")
+
+        if authorization != self.config["auth"]:
+            raise Unauthorized("Invalid authorization header")
+
+        return f(self)
+
+    return wrapper
+
 
 def check_queries(f):
-    def check_names(t, names, queries):
-        for name in names:
-            if hasattr(t, "__args__"):
-                args = t.__args__
-                if len(args) == 2 and args[1] is type(None):
-                    return
-
-            if name not in queries:
-                raise BadRequest(f"{name} is not given as a query")
-
     @wraps(f)
     def wrapper(self):
         queries = [k for k, v in self.request.args.items()]
         for names, t in self.queries:
-            check_names(t, names, queries)
+            check_names(t, names, queries, "query")
 
         return f(self)
 
@@ -31,16 +53,6 @@ def check_queries(f):
 
 
 def check_fields(f):
-    def check_names(t, names, fields):
-        for name in names:
-            if hasattr(t, "__args__"):
-                args = t.__args__
-                if len(args) == 2 and args[1] is type(None):
-                    return
-
-            if name not in fields:
-                raise BadRequest(f"{name} is not given as a field")
-
     @wraps(f)
     def wrapper(self):
         if len(self.fields) == 0:
@@ -51,7 +63,7 @@ def check_fields(f):
 
         fields = [k for k, v in self.request.json.items()]
         for names, t in self.fields:
-            check_names(t, names, fields)
+            check_names(t, names, fields, "field")
 
         return f(self)
 
@@ -62,7 +74,10 @@ class Handler:
 
     def __init__(self, app):
         self.request = request
+        self.methods = ["GET"]
         self.app = app
+        self.config = config
+        self.require_authorization = True
         self.aliases = []
         self.queries = []
         self.fields = []
@@ -71,9 +86,10 @@ class Handler:
     def __call__(self):
         return self.on_request()
 
+    @check_authorization
     @check_fields
     @check_queries
-    def on_request(self):
+    def on_request(self, *args):
         pass
 
     def query(self, query: str, type: Type[Any] = str, default: Any = None) -> Any:
@@ -87,30 +103,6 @@ class Handler:
             return type(self.request.json.get(key, default))
         except ValueError:
             raise BadRequest(f"{key} is meant to be a {type.__name__}")
-
-
-class GetHandler(Handler):
-
-    def __init__(self, app):
-        super().__init__(app)
-
-        self.methods = ["GET"]
-
-    @check_queries
-    def on_request(self):
-        pass
-
-
-class PostHandler(Handler):
-
-    def __init__(self, app):
-        super().__init__(app)
-
-        self.methods = ["POST"]
-
-    @check_fields
-    def on_request(self):
-        pass
 
 
 class MultipleImageHandler(Handler):

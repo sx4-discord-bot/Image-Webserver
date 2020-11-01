@@ -1,11 +1,10 @@
 from PIL import ImageDraw
 
-from handlers.handler import GetHandler
+from handlers.handler import Handler
 from utility.image import get_image_asset, get_font_asset, get_image_response
-from utility.response import BadRequest
 
 
-class GoogleHandler(GetHandler):
+class GoogleHandler(Handler):
 
     def __init__(self, app):
         super().__init__(app)

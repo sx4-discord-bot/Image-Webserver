@@ -19,14 +19,13 @@ def get_text_array(text: str, font: ImageFont, max_width: int) -> List[str]:
     width = 0
     lines, builder = [], []
     for i, word in enumerate(text_split):
-        n = 0
+        start = 0
 
         word += " "
         word_length, (word_width, word_height) = len(word), font.getsize(word)
         if word_width + width > max_width:
-            iteration = 0
             while True:
-                cut_word = word[n:word_length]
+                cut_word = word[start:word_length]
 
                 cut_word_width, cut_word_height = font.getsize(cut_word)
                 if cut_word_width + width > max_width:
@@ -36,20 +35,18 @@ def get_text_array(text: str, font: ImageFont, max_width: int) -> List[str]:
                         builder.append(cut_word)
                         width = cut_word_width
                         break
-                    elif iteration == 0 and width != 0:
+                    elif start == 0 and width != 0:
                         builder.append(cut_word)
                         lines.append("".join(builder))
                         builder = []
                         width = 0
-                        n = word_length
+                        start = word_length
                         word_length = len(word)
                     else:
-                        n = word_length
+                        start = word_length
                         word_length = len(word)
                         lines.append(cut_word)
                         width = 0
-
-                    iteration += 1
         else:
             width += word_width
             if width > max_width:
@@ -59,8 +56,8 @@ def get_text_array(text: str, font: ImageFont, max_width: int) -> List[str]:
             else:
                 builder.append(word)
 
-            if i == len(text_split) - 1:
-                lines.append("".join(builder))
+        if i == len(text_split) - 1 and len(builder) != 0:
+            lines.append("".join(builder))
 
     return lines
 

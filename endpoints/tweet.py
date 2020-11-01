@@ -66,8 +66,8 @@ class TweetHandler(SingleImageHandler):
         draw.text((77 + retweets_width + retweets_text_width, 326), likes, (0, 0, 0), likes_font)
         draw.text((82 + retweets_width + retweets_text_width + likes_width, 327), "Likes", (128, 128, 128), tag_font)
 
-        hour = datetime.utcnow().strftime("%I")
-        draw.text((60, 265), f"{int(hour)}{datetime.utcnow().strftime(':%M %p - %d %b %Y')}", (128, 128, 128), tag_font)
+        now = datetime.utcnow()
+        draw.text((60, 270), f"{int(now.strftime('%I'))}{now.strftime(':%M %p - %d %b %Y')}", (128, 128, 128), tag_font)
 
         additional = 0
         for like_image in like_images:

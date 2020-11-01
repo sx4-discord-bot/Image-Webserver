@@ -2,13 +2,12 @@ from typing import Optional
 
 from PIL import Image
 
-from handlers.handler import GetHandler
+from handlers.handler import Handler
 from utility.colour import as_rgb_tuple
 from utility.image import get_image_response
-from utility.response import BadRequest
 
 
-class ColourHandler(GetHandler):
+class ColourHandler(Handler):
 
     def __init__(self, app):
         super().__init__(app)
