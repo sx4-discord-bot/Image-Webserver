@@ -1,4 +1,5 @@
 import inspect
+import ipaddress
 import os
 import sys
 import traceback
@@ -31,6 +32,11 @@ for file in os.listdir("endpoints"):
                 app.add_url_rule(f"/api/{alias}", alias, handler)
 
             break
+
+
+@app.before_request
+def before_request():
+    pass
 
 
 @app.errorhandler(JsonException)

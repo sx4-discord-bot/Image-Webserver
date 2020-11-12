@@ -13,60 +13,69 @@ IMAGE_ASSET_PATH = "resources/images/"
 FONT_ASSET_PATH = "resources/fonts/"
 
 
-def get_text_array(text: str, font: ImageFont, max_width: int) -> List[str]:
-    text_split = text.strip().split(" ")
+def get_text_array(text: str, font: ImageFont, max_width: int, width: int = 0, strip: bool = True) -> List[str]:
+    text = text.strip() if strip else text
 
-    width = 0
-    lines, builder = [], []
-    for i, word in enumerate(text_split):
-        start = 0
+    final_lines = []
 
-        word += " "
-        word_length, (word_width, word_height) = len(word), font.getsize(word)
-        if word_width + width > max_width:
-            while True:
-                cut_word = word[start:word_length]
+    manual_lines = text.split("\n")
+    for manual_line in manual_lines:
+        text_split = manual_line.split(" ")
 
-                cut_word_width, cut_word_height = font.getsize(cut_word)
-                if cut_word_width + width > max_width:
-                    word_length -= 1
-                else:
-                    if word_length == len(word):
-                        builder.append(cut_word)
-                        width = cut_word_width
-                        break
-                    elif start == 0 and width != 0:
-                        builder.append(cut_word)
-                        lines.append("".join(builder))
-                        builder = []
-                        width = 0
-                        start = word_length
-                        word_length = len(word)
+        lines, builder = [], []
+        for i, word in enumerate(text_split):
+            start = 0
+
+            if i != len(text_split) - 1:
+                word += " "
+
+            word_length, (word_width, word_height) = len(word), font.getsize(word)
+            if word_width + width > max_width:
+                while True:
+                    cut_word = word[start:word_length]
+
+                    cut_word_width, cut_word_height = font.getsize(cut_word)
+                    if cut_word_width + width > max_width:
+                        word_length -= 1
                     else:
-                        start = word_length
-                        word_length = len(word)
-                        lines.append(cut_word)
-                        width = 0
-        else:
-            width += word_width
-            if width > max_width:
-                lines.append("".join(builder))
-                builder = [word]
-                width = word_width
+                        if word_length == len(word):
+                            builder.append(cut_word)
+                            width = cut_word_width
+                            break
+                        elif start == 0 and width != 0:
+                            builder.append(cut_word)
+                            lines.append("".join(builder))
+                            builder = []
+                            width = 0
+                            start = word_length
+                            word_length = len(word)
+                        else:
+                            start = word_length
+                            word_length = len(word)
+                            lines.append(cut_word)
+                            width = 0
             else:
-                builder.append(word)
+                width += word_width
+                if width > max_width:
+                    lines.append("".join(builder))
+                    builder = [word]
+                    width = word_width
+                else:
+                    builder.append(word)
 
-        if i == len(text_split) - 1 and len(builder) != 0:
-            lines.append("".join(builder))
+            if i == len(text_split) - 1 and len(builder) != 0:
+                lines.append("".join(builder))
 
-    return lines
+        final_lines += lines
+
+    return final_lines
 
 
 def get_text_newlined(text: str, font: ImageFont, max_width: int) -> str:
     return "\n".join(get_text_array(text, font, max_width))
 
 
-def get_image(url: str, name: str, name_type: str) -> Image:
+def get_image(url: str, name: str = "Unknown", name_type: str = "N/A") -> Image:
     try:
         return Image.open(BytesIO(requests.get(url, stream=True).content))
     except MissingSchema:

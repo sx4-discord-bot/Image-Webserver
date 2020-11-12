@@ -18,8 +18,10 @@ def check_names(t, names, queries, name_type):
             if len(args) == 2 and args[1] is type(None):
                 return
 
-        if name not in queries:
-            raise BadRequest(f"{name} is not given as a {name_type}")
+        if name in queries:
+            return
+
+    raise BadRequest(f"{name} is not given as a {name_type}")
 
 
 def check_authorization(f):

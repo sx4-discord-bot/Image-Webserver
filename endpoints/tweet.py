@@ -25,8 +25,8 @@ class TweetHandler(SingleImageHandler):
 
     def on_request(self, avatar):
         text = self.body("text")
-        likes = "{:,}".format(self.body("likes", int))
-        retweets = "{:,}".format(self.body("retweets", int))
+        likes = f"{self.body('likes', int):,}"
+        retweets = f"{self.body('retweets', int):,}"
         like_images = [create_avatar(get_image(url, f"urls.{i}", "field").convert("RGBA").resize((36, 36))) for i, url in enumerate(self.body("urls", list))]
         name = self.body("name")
         display_name = self.body("display_name")

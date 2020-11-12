@@ -16,8 +16,10 @@ class EndpointsHandler(Handler):
             args = t.__args__
             if len(args) == 2 and args[1] is type(None):
                 builder.append(f"{self.format_query(args[0])}?")
+            elif len(args) == 2:
+                builder.append(f"{{{self.format_query(args[0])}: {self.format_query(args[1])}}}")
             elif len(args) == 1:
-                builder.append(f"[{args[0].__name__}]")
+                builder.append(f"[{self.format_query(args[0])}]")
         else:
             builder.append(t.__name__)
 
