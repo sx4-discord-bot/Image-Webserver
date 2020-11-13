@@ -67,6 +67,7 @@ def get_text_array(text: str, font: ImageFont, max_width: int, width: int = 0, s
                 lines.append("".join(builder))
 
         final_lines += lines
+        width = 0
 
     return final_lines if max_lines == -1 else final_lines[:max_lines]
 

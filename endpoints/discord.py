@@ -150,6 +150,7 @@ class DiscordHandler(SingleImageHandler):
         for text_type in text_types:
             if text_type.mention:
                 text_type_width = text_type.width(text_font)
+                print(text_type_width)
                 if width + text_type_width > 820:
                     width = 0
                     height += 34
@@ -166,7 +167,7 @@ class DiscordHandler(SingleImageHandler):
                     emote = get_image(str(text_type)).convert("RGBA").resize((30, 30))
                     blank.paste(emote, (width + 160, height + 6), emote)
                 else:
-                    draw.rectangle((width + 160, height + 5, width + text_type_width, height + 37), mention_box_colour)
+                    draw.rectangle((width + 160, height + 5, width + 160 + text_type_width, height + 37), mention_box_colour)
                     draw.text((width + 160, height), str(text_type), text_colour, text_font)
 
                 width += text_type_width

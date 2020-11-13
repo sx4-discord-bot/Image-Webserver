@@ -19,6 +19,7 @@ class FlagHandler(SingleImageHandler):
         flag = self.query("flag")
 
         flag_response = requests.get(f"http://www.geonames.org/flags/x/{flag}.gif", stream=True)
+
         if flag_response.status_code == 404:
             raise BadRequest("Invalid flag code")
 

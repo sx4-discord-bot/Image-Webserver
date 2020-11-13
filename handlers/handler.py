@@ -21,7 +21,7 @@ def check_names(t, names, queries, name_type):
         if name in queries:
             return
 
-        raise BadRequest(f"{name} is not given as a {name_type}")
+    raise BadRequest(f"{names[0]} is not given as a {name_type}")
 
 
 def check_authorization(f):
@@ -101,8 +101,12 @@ class Handler:
         return self.request.headers.get(header, type=type, default=default)
 
     def body(self, key: str, type: Type[Any] = str, default: Any = None) -> Any:
+        value = self.request.json.get(key)
+        if value is None:
+            return default
+
         try:
-            return type(self.request.json.get(key, default))
+            return type(value)
         except ValueError:
             raise BadRequest(f"{key} is meant to be a {type.__name__}")
 
