@@ -132,8 +132,6 @@ class DiscordHandler(SingleImageHandler):
             builder.append(character)
             i += 1
 
-        print("hello")
-
         if len(builder) != 0:
             text_types.append(TextType("".join(builder), 0, None))
 
@@ -184,8 +182,6 @@ class DiscordHandler(SingleImageHandler):
                             width = 0
 
                         height += 34
-
-        print(height)
 
         background = Image.new("RGBA", (1000, max(height + 25, 120)), (54, 57, 63) if dark_theme else (255, 255, 255))
         background.paste(blank, (0, 0), blank)
