@@ -30,7 +30,7 @@ def get_text_array(text: str, font: ImageFont, max_width: int, width: int = 0, s
                 word += " "
 
             word_length, (word_width, word_height) = len(word), font.getsize(word)
-            if word_width + width > max_width:
+            if word_width + width > max_width and word_width > max_width:
                 while True:
                     cut_word = word[start:word_length]
 

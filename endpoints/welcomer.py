@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw
 
 from handlers.handler import SingleImageHandler
 from utility.image import create_avatar, get_image, get_font_asset, get_image_response, for_each_frame, get_font_optimal
+from utility.types import boolean
 
 
 class WelcomerHandler(SingleImageHandler):
@@ -11,11 +12,12 @@ class WelcomerHandler(SingleImageHandler):
     def __init__(self, app):
         super().__init__(app)
 
-        self.queries += [(["banner"], Optional[str]), (["name"], str)]
+        self.queries += [(["banner"], Optional[str]), (["name"], str), (["gif"], bool)]
 
     def on_request(self, avatar):
         name = self.query("name")
         banner_url = self.query("banner")
+        gif = self.query("gif", boolean)
 
         welcome_font = get_font_asset("uni-sans.otf", 50)
         welcome_width = welcome_font.getsize("Welcome")[0]
@@ -31,7 +33,7 @@ class WelcomerHandler(SingleImageHandler):
 
         name_font = get_font_optimal("uni-sans.otf", 100, name, 1025 - discrim_width * 2)
 
-        # very hacky way to vertically align uni-sans
+        # very hacky way to vertically align the text
         name_width = name_font.getsize(name)[0]
         (_, _), (x, y) = name_font.font.getsize("a" * len(name))
         name_height = name_font.getmetrics()[0] - y
@@ -52,8 +54,7 @@ class WelcomerHandler(SingleImageHandler):
             banner = get_image(banner_url)
 
             def parse(frame):
-                frame = frame.convert("RGBA")
-                frame = frame.resize((1280, 720))
+                frame = frame.convert("RGBA").resize((1280, 720))
 
                 frame.paste(text_holder, (175, 220), text_holder)
                 frame.paste(avatar_outline, (0, 205), avatar_outline)
@@ -61,12 +62,12 @@ class WelcomerHandler(SingleImageHandler):
 
                 draw = ImageDraw.Draw(frame)
                 draw.text(((1420 - welcome_width) / 2, 240), "Welcome", (255, 255, 255), welcome_font)
-                draw.text(((1420 - name_width) / 2, 390 - name_height), name, (255, 255, 255), name_font)
+                draw.text(((1420 - name_width) / 2, 385 - name_height), name, (255, 255, 255), name_font)
                 draw.text(((1420 - name_width) / 2 + name_width, 352), discrim, (153, 170, 183), welcome_font)
 
                 return frame
 
-            return get_image_response(for_each_frame(banner, parse))
+            return get_image_response(for_each_frame(banner, parse) if gif else [parse(banner)])
 
     def image_queries(self):
         return [("avatar", False)]
