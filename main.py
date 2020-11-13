@@ -34,11 +34,6 @@ for file in os.listdir("endpoints"):
             break
 
 
-@app.before_request
-def before_request():
-    pass
-
-
 @app.errorhandler(JsonException)
 def error_handler(error):
     return error.as_response()

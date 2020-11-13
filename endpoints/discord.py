@@ -179,7 +179,7 @@ class DiscordHandler(SingleImageHandler):
 
                         height += 34
 
-        background = Image.new("RGBA", (1000, max(height + 50, 120)), (54, 57, 63) if dark_theme else (0, 0, 0))
+        background = Image.new("RGBA", (1000, max(height + 50, 120)), (54, 57, 63) if dark_theme else (255, 255, 255))
         background.paste(blank, (0, 0), blank)
 
         def parse(frame):

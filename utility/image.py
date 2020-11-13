@@ -94,6 +94,15 @@ def get_font_asset(path: str, size: int) -> ImageFont:
     return ImageFont.truetype(FONT_ASSET_PATH + path, size)
 
 
+def get_font_optimal(path: str, start: int, text: str, max_width: int) -> ImageFont:
+    font = get_font_asset(path, start)
+    while font.getsize(text)[0] > max_width:
+        start -= 1
+        font = get_font_asset(path, start)
+
+    return font
+
+
 def create_avatar(image: Image) -> Image:
     mask = Image.new("L", image.size, 0)
     draw = ImageDraw.Draw(mask)

@@ -12,22 +12,22 @@ config = json.load(open("config.json"))
 
 
 def check_names(t, names, queries, name_type):
-    for name in names:
-        if hasattr(t, "__args__"):
-            args = t.__args__
-            if len(args) == 2 and args[1] is type(None):
-                return
+    if hasattr(t, "__args__"):
+        args = t.__args__
+        if len(args) == 2 and args[1] is type(None):
+            return
 
+    for name in names:
         if name in queries:
             return
 
-    raise BadRequest(f"{name} is not given as a {name_type}")
+        raise BadRequest(f"{name} is not given as a {name_type}")
 
 
 def check_authorization(f):
     @wraps(f)
     def wrapper(self):
-        if not self.require_authorization or self.request.remote_addr in self.config["whitelisted_ips"]:
+        if not self.require_authorization:
             return f(self)
 
         authorization = request.headers.get("authorization")
@@ -85,12 +85,12 @@ class Handler:
         self.fields = []
         self.name = self.__module__.split(".")[-1]  # -1 in case the root of the file changes
 
-    def __call__(self):
-        return self.on_request()
-
     @check_authorization
     @check_fields
     @check_queries
+    def __call__(self):
+        return self.on_request()
+
     def on_request(self, *args):
         pass
 
@@ -115,15 +115,14 @@ class MultipleImageHandler(Handler):
         self.fields += [([k], str) for k, v in self.image_queries() if v]
         self.queries += [([k], str) for k, v in self.image_queries() if not v]
 
+    @check_authorization
+    @check_fields
+    @check_queries
     def __call__(self):
-        super().on_request()
-
         images = []
         for name, is_body in self.image_queries():
             name_type = "field" if is_body else "query"
             query = self.body(name) if is_body else self.query(name)
-            if not query:
-                raise BadRequest(f"{name} query not given")
 
             images.append(get_image(query, name, name_type))
 
