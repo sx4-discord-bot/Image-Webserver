@@ -23,10 +23,10 @@ class DriftHandler(SingleImageHandler):
         background.paste(avatar, (270, 335), avatar)
 
         draw = ImageDraw.Draw(background)
-        draw.text((125, 55), "\n".join(get_text_array(left_text, font, 80)[:4]), (255, 255, 255), font)
+        draw.text((125, 55), get_text_newlined(left_text, font, 80, 4), (255, 255, 255), font)
 
         if right_text:
-            draw.text((265, 55), "\n".join(get_text_array(right_text, font, 110)[:4]), (255, 255, 255), font)
+            draw.text((265, 55), get_text_newlined(right_text, font, 110, 4), (255, 255, 255), font)
 
         return get_image_response([background])
 

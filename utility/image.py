@@ -13,7 +13,7 @@ IMAGE_ASSET_PATH = "resources/images/"
 FONT_ASSET_PATH = "resources/fonts/"
 
 
-def get_text_array(text: str, font: ImageFont, max_width: int, width: int = 0, strip: bool = True) -> List[str]:
+def get_text_array(text: str, font: ImageFont, max_width: int, width: int = 0, strip: bool = True, max_lines: int = -1) -> List[str]:
     text = text.strip() if strip else text
 
     final_lines = []
@@ -68,11 +68,11 @@ def get_text_array(text: str, font: ImageFont, max_width: int, width: int = 0, s
 
         final_lines += lines
 
-    return final_lines
+    return final_lines if max_lines == -1 else final_lines[:max_lines]
 
 
-def get_text_newlined(text: str, font: ImageFont, max_width: int) -> str:
-    return "\n".join(get_text_array(text, font, max_width))
+def get_text_newlined(text: str, font: ImageFont, max_width: int, max_lines: int = -1) -> str:
+    return "\n".join(get_text_array(text, font, max_width, 0, True, max_lines))
 
 
 def get_image(url: str, name: str = "Unknown", name_type: str = "N/A") -> Image:

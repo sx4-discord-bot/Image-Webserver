@@ -94,7 +94,7 @@ class Handler:
     def on_request(self, *args):
         pass
 
-    def query(self, query: str, type: [Any] = str, default: Any = None) -> Any:
+    def query(self, query: str, type: Type[Any] = str, default: Any = None) -> Any:
         return self.request.args.get(query, type=type, default=default)
 
     def header(self, header: str, type: Type[Any] = str, default: Any = None) -> Any:

@@ -7,6 +7,7 @@ from handlers.handler import SingleImageHandler
 from utility.colour import as_rgb_tuple
 from utility.image import get_font_asset, get_image_asset, get_text_array, get_image_response, get_image, \
     for_each_frame, create_avatar
+from utility.response import BadRequest
 
 
 class TextType:
@@ -66,6 +67,9 @@ class DiscordHandler(SingleImageHandler):
         roles = self.body("roles", dict)
         users = self.body("users", dict)
         channels = self.body("channels", dict)
+
+        if len(text) > 250:
+            raise BadRequest("Text at max can be 250 characters in length")
 
         text_font = get_font_asset("whitney/whitney-book.otf", 34)
         name_font = get_font_asset("whitney/Whitney-Medium.ttf", 40)
@@ -128,10 +132,12 @@ class DiscordHandler(SingleImageHandler):
             builder.append(character)
             i += 1
 
+        print("hello")
+
         if len(builder) != 0:
             text_types.append(TextType("".join(builder), 0, None))
 
-        blank = Image.new("RGBA", (1000, 2500), (0, 0, 0, 0))
+        blank = Image.new("RGBA", (1000, 400), (0, 0, 0, 0))
 
         draw = ImageDraw.Draw(blank)
 
@@ -142,12 +148,12 @@ class DiscordHandler(SingleImageHandler):
         if bot:
             blank.paste(bot_tag, (170 + name_width, 2), bot_tag)
 
-        width, height = 160, 60
+        width, height = 0, 60
         for text_type in text_types:
             if text_type.mention:
                 text_type_width = text_type.width(text_font)
-                if width + text_type_width > 1000:
-                    width = 160
+                if width + text_type_width > 820:
+                    width = 0
                     height += 34
 
                 if text_type.mention_type == 2:
@@ -160,26 +166,28 @@ class DiscordHandler(SingleImageHandler):
 
                 if text_type.mention_type == 4:
                     emote = get_image(str(text_type)).convert("RGBA").resize((30, 30))
-                    blank.paste(emote, (width, height + 6), emote)
+                    blank.paste(emote, (width + 160, height + 6), emote)
                 else:
-                    draw.rectangle((width, height + 5, width + text_type_width, height + 37), mention_box_colour)
-                    draw.text((width, height), str(text_type), text_colour, text_font)
+                    draw.rectangle((width + 160, height + 5, width + text_type_width, height + 37), mention_box_colour)
+                    draw.text((width + 160, height), str(text_type), text_colour, text_font)
 
                 width += text_type_width
             else:
-                lines = get_text_array(str(text_type), text_font, 1000, width, False)
+                lines = get_text_array(str(text_type), text_font, 820, width, False)
                 for i, line in enumerate(lines):
-                    draw.text((width, height), line, (255, 255, 255) if dark_theme else (116, 127, 141), text_font)
+                    draw.text((width + 160, height), line, (255, 255, 255) if dark_theme else (116, 127, 141), text_font)
 
                     if i == len(lines) - 1:
                         width += text_font.getsize(line)[0]
                     else:
                         if i == 0:
-                            width = 160
+                            width = 0
 
                         height += 34
 
-        background = Image.new("RGBA", (1000, max(height + 50, 120)), (54, 57, 63) if dark_theme else (255, 255, 255))
+        print(height)
+
+        background = Image.new("RGBA", (1000, max(height + 25, 120)), (54, 57, 63) if dark_theme else (255, 255, 255))
         background.paste(blank, (0, 0), blank)
 
         def parse(frame):

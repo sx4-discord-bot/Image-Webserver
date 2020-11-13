@@ -39,7 +39,7 @@ class TweetHandler(SingleImageHandler):
         background = get_image_asset("tweet.png")
         draw = ImageDraw.Draw(background)
 
-        lines = get_text_array(text, text_font, 833)
+        lines = get_text_array(text, text_font, 833)[:4]
 
         height = 135
         for line in lines:
