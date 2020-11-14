@@ -1,4 +1,7 @@
-from typing import List, Optional
+from io import BytesIO
+
+import numpy as np
+from typing import List, Optional, Any
 
 from PIL import Image, ImageDraw
 
@@ -35,13 +38,13 @@ class ProfileHandler(SingleImageHandler):
         height = self.body("height")
         married_users = self.body("married_users", list)[:5]
         balance = self.body("balance")
-        background = self.body("background", bytes)
+        background = BytesIO(bytearray([x % 256 for x in self.body("background", list)]))
         reputation = self.body("reputation", int)
-        colour = as_rgb_tuple(self.body("colour", int) or self.body("color", int))
+        colour = as_rgb_tuple(self.body("colour", int, 16777215) or self.body("color", int, 16777215))
         badges = self.body("badges", list)
 
         if background:
-            background = Image.frombytes("RGBA", (2560, 1440), background)
+            background = Image.open(background)
         else:
             background = Image.new("RGBA", (2560, 1440), (114, 137, 218))
 

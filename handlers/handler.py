@@ -1,6 +1,6 @@
 import json
 from functools import wraps
-from typing import Any, Type, List, Tuple
+from typing import Any, Type, List, Tuple, Optional
 
 from PIL import Image
 from flask import request
@@ -100,10 +100,13 @@ class Handler:
     def header(self, header: str, type: Type[Any] = str, default: Any = None) -> Any:
         return self.request.headers.get(header, type=type, default=default)
 
-    def body(self, key: str, type: Type[Any] = str, default: Any = None) -> Any:
+    def body(self, key: str, type: Optional[Type[Any]] = str, default: Any = None) -> Any:
         value = self.request.json.get(key)
         if value is None:
             return default
+
+        if not type:
+            return value
 
         try:
             return type(value)
