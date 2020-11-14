@@ -38,19 +38,24 @@ class ProfileHandler(SingleImageHandler):
         height = self.body("height")
         married_users = self.body("married_users", list)[:5]
         balance = self.body("balance")
-        background = BytesIO(bytearray([x % 256 for x in self.body("background", list)]))
+        background = self.body("background", list)
+        background = None if background is None else BytesIO(bytearray([x % 256 for x in background]))
         reputation = self.body("reputation", int)
         colour = as_rgb_tuple(self.body("colour", int, 16777215) or self.body("color", int, 16777215))
         badges = self.body("badges", list)
+
+        blank = Image.new("RGBA", (2560, 1440), (255, 255, 255, 0))
 
         if background:
             background = Image.open(background)
         else:
             background = Image.new("RGBA", (2560, 1440), (114, 137, 218))
 
+        blank.paste(background, (0, 0), background)
+
         avatar_outline = create_avatar(Image.new("RGBA", (470, 470), colour))
 
-        draw = ImageDraw.Draw(background)
+        draw = ImageDraw.Draw(blank)
         draw.rectangle((0, 0, 2000, 500), (35, 39, 42))
         draw.rectangle((0, 500, 2000, 650), (44, 47, 51))
         draw.rectangle((2000, 0, 2560, 650), (44, 47, 51))
@@ -107,7 +112,7 @@ class ProfileHandler(SingleImageHandler):
         width, height = 2030, 130
         for badge in badges:
             badge_image = get_image_asset(f"badges/{badge}.png")
-            background.paste(badge_image, (width, height), badge_image)
+            blank.paste(badge_image, (width, height), badge_image)
 
             if width + 130 >= 2550:
                 width = 2030
@@ -115,10 +120,12 @@ class ProfileHandler(SingleImageHandler):
             else:
                 width += 130
 
-        background.paste(avatar_outline, (15, 15), avatar_outline)
-        background.paste(avatar, (25, 25), avatar)
+        blank.paste(avatar_outline, (15, 15), avatar_outline)
+        blank.paste(avatar, (25, 25), avatar)
 
-        return get_image_response([background])
+        blank = Image.alpha_composite(background, blank)
+
+        return get_image_response([blank])
 
     def image_queries(self):
         return [("avatar", True)]
