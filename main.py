@@ -6,7 +6,7 @@ import traceback
 
 from flask import Flask, request, Request
 
-from utility.response import NotFound, MethodNotAllowed, BadRequest, JsonException
+from utility.response import NotFound, MethodNotAllowed, BadRequest, JsonException, InternalError
 
 app = Flask(__name__)
 
@@ -52,7 +52,7 @@ def method_not_allowed(error):
 @app.errorhandler(Exception)
 def error_handler(error):
     traceback.print_exc()
-    return JsonException(500, "An unknown error occurred", {"error": str(error)}).as_response()
+    return InternalError("An unknown error occurred", {"error": str(error)}).as_response()
 
 
 def on_json_loading_failed(x, y):

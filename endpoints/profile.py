@@ -47,7 +47,7 @@ class ProfileHandler(SingleImageHandler):
         blank = Image.new("RGBA", (2560, 1440), (255, 255, 255, 0))
 
         if background:
-            background = Image.open(background)
+            background = Image.open(background).convert("RGBA")
         else:
             background = Image.new("RGBA", (2560, 1440), (114, 137, 218))
 
@@ -94,7 +94,7 @@ class ProfileHandler(SingleImageHandler):
 
         name_width, name_height = name_font.getsize(name)
 
-        draw.text(((2000 - name_width) / 2 + 215, (250 - name_height) + round(name_height / 4)), name, colour, name_font)
+        draw.text(((2000 - name_width) / 2 + 215, 250 - name_height / 2), name, colour, name_font)
         draw.text((20, 555), f"Reputation: {reputation}", colour, stats_font)
         draw.text((520, 555), f"Balance: ${balance}", colour, stats_font)
         draw.text((1020, 555), f"Birthday: {birthday}", colour, stats_font)

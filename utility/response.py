@@ -5,10 +5,13 @@ from flask import Response
 
 class JsonException(Exception):
 
-    def __init__(self, status: int, message: str, extra: dict=None):
+    def __init__(self, status: int, message: str, extra: dict = None):
         super().__init__()
 
-        data = {"status": status, "message": message}
+        data = {"status": status}
+
+        if message:
+            data["message"] = message
 
         if extra:
             data.update(extra)
@@ -23,35 +26,35 @@ class JsonException(Exception):
 
 class BadRequest(JsonException):
 
-    def __init__(self, message: str=None):
-        super().__init__(400, message)
+    def __init__(self, message: str = None, extra: dict = None):
+        super().__init__(400, message, extra)
 
 
 class Unauthorized(JsonException):
 
-    def __init__(self, message: str=None):
-        super().__init__(401, message)
+    def __init__(self, message: str = None, extra: dict = None):
+        super().__init__(401, message, extra)
 
 
 class Forbidden(JsonException):
 
-    def __init__(self, message: str=None):
-        super().__init__(403, message)
+    def __init__(self, message: str = None, extra: dict = None):
+        super().__init__(403, message, extra)
 
 
 class NotFound(JsonException):
 
-    def __init__(self, message: str=None):
-        super().__init__(404, message)
+    def __init__(self, message: str = None, extra: dict = None):
+        super().__init__(404, message, extra)
 
 
 class MethodNotAllowed(JsonException):
 
-    def __init__(self, message: str=None):
-        super().__init__(405, message)
+    def __init__(self, message: str = None, extra: dict = None):
+        super().__init__(405, message, extra)
 
 
 class InternalError(JsonException):
 
-    def __init__(self, message: str=None):
-        super().__init__(500, message)
+    def __init__(self, message: str = None, extra: dict = None):
+        super().__init__(500, message, extra)
