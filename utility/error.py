@@ -13,7 +13,7 @@ class ErrorType:
     def __int__(self):
         return self.code
 
-    def __dict__(self):
+    def as_json(self):
         return {"details": {"code": self.code, "reason": self.reason}}
 
 

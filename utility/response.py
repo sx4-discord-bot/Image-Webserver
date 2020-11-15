@@ -29,7 +29,7 @@ class JsonException(Exception):
 class BadRequest(JsonException):
 
     def __init__(self, message: str = None, error_code: ErrorCode = None):
-        super().__init__(400, message, dict(error_code.value) if error_code else None)
+        super().__init__(400, message, error_code.value.as_json() if error_code else None)
 
 
 class Unauthorized(JsonException):
