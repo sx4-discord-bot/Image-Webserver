@@ -7,6 +7,7 @@ from PIL import Image, ImageOps, ImageDraw, ImageFont, ImageSequence, Unidentifi
 from flask import Response, send_file
 from requests.exceptions import MissingSchema, ConnectionError
 
+from utility.error import ErrorCode
 from utility.response import BadRequest
 
 IMAGE_ASSET_PATH = "resources/images/"
@@ -80,11 +81,11 @@ def get_image(url: str, name: str = "Unknown", name_type: str = "N/A") -> Image:
     try:
         return Image.open(BytesIO(requests.get(url, stream=True).content))
     except MissingSchema:
-        raise BadRequest(f"Invalid url given for the {name_type} {name}")
+        raise BadRequest(f"Invalid url given for the {name_type} {name}", ErrorCode.INVALID_URL)
     except UnidentifiedImageError:
-        raise BadRequest(f"The {name_type} {name} could not be formed to an image")
+        raise BadRequest(f"The {name_type} {name} could not be formed to an image", ErrorCode.INVALID_IMAGE_URL)
     except ConnectionError:
-        raise BadRequest(f"Site took too long to respond for the {name_type} {name}")
+        raise BadRequest(f"Site took too long to respond for the {name_type} {name}", ErrorCode.URL_TIMEOUT)
 
 
 def get_image_asset(path: str) -> Image:

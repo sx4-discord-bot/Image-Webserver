@@ -5,6 +5,7 @@ from PIL import ImageFont, Image, ImageDraw
 
 from handlers.handler import SingleImageHandler
 from utility.colour import as_rgb_tuple
+from utility.error import ErrorCode
 from utility.image import get_font_asset, get_image_asset, get_text_array, get_image_response, get_image, \
     for_each_frame, create_avatar
 from utility.response import BadRequest
@@ -69,7 +70,7 @@ class DiscordHandler(SingleImageHandler):
         channels = self.body("channels", dict)
 
         if len(text) > 250:
-            raise BadRequest("Text at max can be 250 characters in length")
+            raise BadRequest("Text at max can be 250 characters in length", ErrorCode.INVALID_FIELD_VALUE)
 
         text_font = get_font_asset("whitney/whitney-book.otf", 34)
         name_font = get_font_asset("whitney/Whitney-Medium.ttf", 40)

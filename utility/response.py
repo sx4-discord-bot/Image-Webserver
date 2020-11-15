@@ -2,6 +2,8 @@ import json
 
 from flask import Response
 
+from utility.error import ErrorCode
+
 
 class JsonException(Exception):
 
@@ -26,8 +28,8 @@ class JsonException(Exception):
 
 class BadRequest(JsonException):
 
-    def __init__(self, message: str = None, extra: dict = None):
-        super().__init__(400, message, extra)
+    def __init__(self, message: str = None, error_code: ErrorCode = None):
+        super().__init__(400, message, dict(error_code.value) if error_code else None)
 
 
 class Unauthorized(JsonException):

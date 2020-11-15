@@ -5,13 +5,14 @@ from typing import Any, Type, List, Tuple, Optional
 from PIL import Image
 from flask import request
 
+from utility.error import ErrorCode
 from utility.image import get_image, get_image_response, for_each_frame
 from utility.response import BadRequest, Unauthorized
 
 config = json.load(open("config.json"))
 
 
-def check_names(t, names, queries, name_type):
+def check_names(t, names, queries, field):
     if hasattr(t, "__args__"):
         args = t.__args__
         if len(args) == 2 and args[1] is type(None):
@@ -21,7 +22,8 @@ def check_names(t, names, queries, name_type):
         if name in queries:
             return
 
-    raise BadRequest(f"{names[0]} is not given as a {name_type}")
+    error_code = ErrorCode.FIELD_MISSING if field else ErrorCode.QUERY_MISSING
+    raise BadRequest(f"{names[0]} is not given as a {'field' if field else 'query'}", error_code)
 
 
 def check_authorization(f):
@@ -47,7 +49,7 @@ def check_queries(f):
     def wrapper(self):
         queries = [k for k, v in self.request.args.items()]
         for names, t in self.queries:
-            check_names(t, names, queries, "query")
+            check_names(t, names, queries, False)
 
         return f(self)
 
@@ -61,11 +63,11 @@ def check_fields(f):
             return f(self)
 
         if not self.request.is_json:
-            raise BadRequest("Body has to be json")
+            raise BadRequest("Body has to be valid json", ErrorCode.INVALID_BODY_JSON)
 
         fields = [k for k, v in self.request.json.items()]
         for names, t in self.fields:
-            check_names(t, names, fields, "field")
+            check_names(t, names, fields, True)
 
         return f(self)
 
@@ -111,7 +113,7 @@ class Handler:
         try:
             return type(value)
         except ValueError:
-            raise BadRequest(f"{key} is meant to be a {type.__name__}")
+            raise BadRequest(f"{key} is meant to be a {type.__name__}", ErrorCode.INVALID_QUERY_VALUE)
 
 
 class MultipleImageHandler(Handler):

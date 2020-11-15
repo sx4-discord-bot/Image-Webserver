@@ -3,6 +3,7 @@ from typing import List, Any
 from PIL import Image
 
 from handlers.handler import MultipleImageHandler
+from utility.error import ErrorCode
 from utility.image import create_avatar, get_image_asset, get_image_response
 from utility.response import BadRequest
 
@@ -19,7 +20,7 @@ class ShipHandler(MultipleImageHandler):
 
         percent = self.query("percent", int)
         if percent > 100 or percent < 1:
-            raise BadRequest("Percent cannot be larger than 100 or less than 1")
+            raise BadRequest("Percent cannot be larger than 100 or less than 1", ErrorCode.INVALID_QUERY_VALUE)
 
         blank = Image.new("RGBA", (930, 290), (255, 255, 255, 0))
         border = create_avatar(Image.new("RGBA", (290, 290), (255, 255, 255, 255)))

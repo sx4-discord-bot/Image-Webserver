@@ -6,6 +6,7 @@ import traceback
 
 from flask import Flask, request, Request
 
+from utility.error import ErrorCode
 from utility.response import NotFound, MethodNotAllowed, BadRequest, JsonException, InternalError
 
 app = Flask(__name__)
@@ -56,7 +57,7 @@ def error_handler(error):
 
 
 def on_json_loading_failed(x, y):
-    raise BadRequest("Invalid json in body")
+    raise BadRequest("Invalid json in body", ErrorCode.INVALID_BODY_JSON)
 
 
 Request.on_json_loading_failed = on_json_loading_failed

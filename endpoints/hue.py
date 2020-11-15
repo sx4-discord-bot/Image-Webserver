@@ -2,6 +2,7 @@ import colorsys
 from typing import Optional
 
 from handlers.handler import SingleImageHandler
+from utility.error import ErrorCode
 from utility.image import max_pixels, get_image_response
 from utility.response import BadRequest
 
@@ -16,7 +17,7 @@ class HueHandler(SingleImageHandler):
     def on_request(self, image):
         frame_count = self.query("frames", int) or 60
         if frame_count > 100:
-            raise BadRequest("Frame count cannot be more than 100")
+            raise BadRequest("Frame count cannot be more than 100", ErrorCode.INVALID_QUERY_VALUE)
 
         final_size = max_pixels(image.size, 100)
         image = image.convert("RGBA").resize(final_size)
