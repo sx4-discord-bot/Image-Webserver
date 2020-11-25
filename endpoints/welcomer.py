@@ -70,7 +70,7 @@ class WelcomerHandler(SingleImageHandler):
             return get_image_response(for_each_frame(banner, parse) if gif else [parse(banner)])
 
     def image_queries(self):
-        return [("avatar", False)]
+        return [("avatar", False, True)]
 
     def modify_images(self, images: List[type(Image)]) -> Any:
         return create_avatar(images[0].convert("RGBA").resize((300, 300)))

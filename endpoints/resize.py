@@ -11,7 +11,7 @@ class ResizeHandler(SingleImageHandler):
     def __init__(self, app):
         super().__init__(app)
 
-        self.queries = [(["image"], str), (["width", "w"], Optional[float]), (["height", "h"], Optional[float])]
+        self.queries = [(["width", "w"], Optional[float]), (["height", "h"], Optional[float])]
 
     def on_request(self, image):
         width = self.query("width", float) or self.query("w", float)

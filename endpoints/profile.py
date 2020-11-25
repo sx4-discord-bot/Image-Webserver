@@ -128,7 +128,7 @@ class ProfileHandler(SingleImageHandler):
         return get_image_response([blank])
 
     def image_queries(self):
-        return [("avatar", True)]
+        return [("avatar", True, True)]
 
     def modify_images(self, images):
         return create_avatar(images[0].convert("RGBA").resize((450, 450)))

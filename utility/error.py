@@ -26,4 +26,7 @@ class ErrorCode(Enum):
     INVALID_FIELD_VALUE = ErrorType(5, "A field given was an invalid value")
     QUERY_MISSING = ErrorType(6, "Required query was missing from url")
     INVALID_QUERY_VALUE = ErrorType(7, "A query given was an invalid value")
+    INVALID_BODY_BYTES = ErrorType(8, "Body was not valid bytes")
+    INVALID_IMAGE_BYTES = ErrorType(9, "Body bytes could not be formed to a proper image")
+    VALUE_MISSING = ErrorType(10, "A value is missing from the queries, fields or body")
 

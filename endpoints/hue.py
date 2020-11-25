@@ -12,7 +12,7 @@ class HueHandler(SingleImageHandler):
     def __init__(self, app):
         super().__init__(app)
 
-        self.queries = [(["image"], str), (["frames"], Optional[int])]
+        self.queries = [(["frames"], Optional[int])]
 
     def on_request(self, image):
         frame_count = self.query("frames", int) or 60

@@ -13,7 +13,7 @@ class FlagHandler(SingleImageHandler):
     def __init__(self, app):
         super().__init__(app)
 
-        self.queries = [(["image"], str), (["flag"], str)]
+        self.queries = [(["flag"], str)]
 
     def on_request(self, image):
         flag = self.query("flag")

@@ -19,7 +19,7 @@ class WhoWouldWinHandler(MultipleImageHandler):
         return get_image_response([background])
 
     def image_queries(self):
-        return [("first_image", False), ("second_image", False)]
+        return [("first_image", False, True), ("second_image", False, True)]
 
     def modify_images(self, images: List[type(Image)]) -> Any:
         return [image.convert("RGBA").resize((400, 400)) for image in images]

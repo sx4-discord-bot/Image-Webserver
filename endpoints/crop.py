@@ -11,7 +11,7 @@ class CropHandler(SingleImageHandler):
     def __init__(self, app):
         super().__init__(app)
 
-        self.queries = [(["image"], str), (["width", "w"], Optional[float]), (["height", "h"], Optional[float])]
+        self.queries = [(["width", "w"], Optional[float]), (["height", "h"], Optional[float])]
 
     def on_request(self, image):
         image_width, image_height = image.size

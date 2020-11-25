@@ -4,29 +4,21 @@ from typing import Optional
 
 from PIL import Image
 
-from handlers.handler import Handler
+from handlers.handler import Handler, SingleImageHandler
 from utility.colour import as_rgb_tuple
 from utility.image import get_image_response, for_each_frame, get_image
 
 
-class ManipulateColourHandler(Handler):
+class ManipulateColourHandler(SingleImageHandler):
 
     def __init__(self, app):
         super().__init__(app)
 
-        self.methods = ["GET", "POST"]
-
         self.aliases = ["manipulate-color"]
-        self.queries += [(["colour", "color"], int), (["image"], Optional[str])]
+        self.queries += [(["colour", "color"], int)]
 
-    def on_request(self):
+    def on_request(self, image):
         colour = as_rgb_tuple(self.query("colour", int, 0) or self.query("color", int, 0))
-        image_url = self.query("image")
-
-        if image_url:
-            image = get_image(image_url)
-        else:
-            image = Image.open(BytesIO(self.request.get_data()))
 
         h, s, v = colorsys.rgb_to_hsv(colour[0] / 255, colour[1] / 255, colour[2] / 255)
 

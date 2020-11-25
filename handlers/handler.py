@@ -1,19 +1,21 @@
 import json
 from functools import wraps
+from io import BytesIO
 from typing import Any, Type, List, Tuple, Optional
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from flask import request
 
 from utility.error import ErrorCode
 from utility.image import get_image, get_image_response, for_each_frame
-from utility.response import BadRequest, Unauthorized
+from utility.response import BadRequest, Unauthorized, MethodNotAllowed
 
 config = json.load(open("config.json"))
 
 
 def check_names(t, names, queries, field):
     if hasattr(t, "__args__"):
+        print(t.__args__)
         args = t.__args__
         if len(args) == 2 and args[1] is type(None):
             return
@@ -121,17 +123,17 @@ class MultipleImageHandler(Handler):
     def __init__(self, app):
         super().__init__(app)
 
-        self.fields += [([k], str) for k, v in self.image_queries() if v]
-        self.queries += [([k], str) for k, v in self.image_queries() if not v]
+        self.fields += [([k], str if r else Optional[str]) for k, v, r in self.image_queries() if v]
+        self.queries += [([k], str if r else Optional[str]) for k, v, r in self.image_queries() if not v]
 
     @check_authorization
     @check_fields
     @check_queries
     def __call__(self):
         images = []
-        for name, is_body in self.image_queries():
-            name_type = "field" if is_body else "query"
-            query = self.body(name) if is_body else self.query(name)
+        for name, body in self.image_queries():
+            name_type = "field" if body else "query"
+            query = self.body(name) if body else self.query(name)
 
             images.append(get_image(query, name, name_type))
 
@@ -140,7 +142,7 @@ class MultipleImageHandler(Handler):
     def on_request(self, images: List[type(Image)]):
         pass
 
-    def image_queries(self) -> List[Tuple[str, bool]]:
+    def image_queries(self) -> List[Tuple[str, bool, bool]]:
         pass
 
     def modify_images(self, images: List[type(Image)]) -> Any:
@@ -149,14 +151,48 @@ class MultipleImageHandler(Handler):
 
 class SingleImageHandler(MultipleImageHandler):
 
+    def __init__(self, app):
+        super().__init__(app)
+
+        self.methods = ["GET", "POST"]
+
+    @check_authorization
+    @check_fields
+    @check_queries
+    def __call__(self):
+        name, body, _ = self.image_queries()[0]
+        name_type = "field" if body else "query"
+        query = self.body(name) if body else self.query(name)
+
+        if query and self.request.method != "GET":
+            raise MethodNotAllowed("Use GET when providing the image as a query")
+
+        image = None
+        if not query and len(self.fields) == 0:
+            data = self.request.data
+            if not isinstance(data, bytes):
+                raise BadRequest("Body is meant to be bytes", ErrorCode.INVALID_BODY_BYTES)
+
+            try:
+                image = Image.open(BytesIO(data))
+            except UnidentifiedImageError:
+                raise BadRequest("Could not resolve body to an image", ErrorCode.INVALID_IMAGE_BYTES)
+
+            if self.request.method != "POST":
+                raise MethodNotAllowed("Use POST when providing the image in the body")
+        elif query:
+            image = get_image(query, name, name_type)
+
+        if not image:
+            raise BadRequest("Image not given in query or body", ErrorCode.VALUE_MISSING)
+
+        return self.on_request(image)
+
     def on_request(self, image: Image):
         pass
 
     def image_queries(self):
-        return [("image", False)]
-
-    def modify_images(self, images: List[type(Image)]) -> Any:
-        return images[0]
+        return [("image", False, False)]
 
 
 class ImageFilterHandler(SingleImageHandler):

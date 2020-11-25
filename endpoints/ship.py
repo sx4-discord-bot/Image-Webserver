@@ -42,7 +42,7 @@ class ShipHandler(MultipleImageHandler):
         return get_image_response([blank])
 
     def image_queries(self):
-        return [("first_image", False), ("second_image", False)]
+        return [("first_image", False, True), ("second_image", False, True)]
 
     def modify_images(self, images: List[type(Image)]) -> Any:
         return [create_avatar(image.convert("RGBA").resize((280, 280))) for image in images]

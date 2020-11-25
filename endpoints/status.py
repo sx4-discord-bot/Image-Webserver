@@ -11,7 +11,7 @@ class StatusHandler(SingleImageHandler):
     def __init__(self, app):
         super().__init__(app)
 
-        self.queries = [(["image"], str), (["status"], Optional[str])]
+        self.queries = [(["status"], Optional[str])]
 
     def on_request(self, image):
         status = self.query("status") or "online"
