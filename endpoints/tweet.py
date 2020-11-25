@@ -77,7 +77,7 @@ class TweetHandler(SingleImageHandler):
         return get_image_response([background])
 
     def image_queries(self):
-        return [("avatar", True, True)]
+        return [("avatar", True, False)]
 
     def modify_images(self, images: List[type(Image)]) -> Any:
         return create_avatar(images[0].convert("RGBA").resize((72, 72)))

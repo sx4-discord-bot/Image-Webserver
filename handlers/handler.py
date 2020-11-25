@@ -15,7 +15,6 @@ config = json.load(open("config.json"))
 
 def check_names(t, names, queries, field):
     if hasattr(t, "__args__"):
-        print(t.__args__)
         args = t.__args__
         if len(args) == 2 and args[1] is type(None):
             return
@@ -131,7 +130,7 @@ class MultipleImageHandler(Handler):
     @check_queries
     def __call__(self):
         images = []
-        for name, body in self.image_queries():
+        for name, body, _ in self.image_queries():
             name_type = "field" if body else "query"
             query = self.body(name) if body else self.query(name)
 
@@ -164,7 +163,7 @@ class SingleImageHandler(MultipleImageHandler):
         name_type = "field" if body else "query"
         query = self.body(name) if body else self.query(name)
 
-        if query and self.request.method != "GET":
+        if query and not body and self.request.method != "GET":
             raise MethodNotAllowed("Use GET when providing the image as a query")
 
         image = None
@@ -186,13 +185,16 @@ class SingleImageHandler(MultipleImageHandler):
         if not image:
             raise BadRequest("Image not given in query or body", ErrorCode.VALUE_MISSING)
 
-        return self.on_request(image)
+        return self.on_request(self.modify_images([image]))
 
     def on_request(self, image: Image):
         pass
 
     def image_queries(self):
         return [("image", False, False)]
+
+    def modify_images(self, images: List[type(Image)]) -> Any:
+        return images[0]
 
 
 class ImageFilterHandler(SingleImageHandler):

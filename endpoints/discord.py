@@ -199,4 +199,4 @@ class DiscordHandler(SingleImageHandler):
         return get_image_response(for_each_frame(avatar, parse), transparency=255)
 
     def image_queries(self):
-        return [("avatar", True, True)]
+        return [("avatar", True, False)]
