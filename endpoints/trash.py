@@ -9,14 +9,8 @@ class TrashHandler(SingleImageHandler):
     def on_request(self, image):
         background = get_image_asset("trash-meme.jpg")
 
-        filter = ImageFilter.GaussianBlur(10)
+        image = image.convert("RGBA").resize((385, 384)).filter(ImageFilter.GaussianBlur(10))
 
-        def parse(frame):
-            frame = frame.convert("RGBA").resize((385, 384)).filter(filter)
+        background.paste(image, (384, 0), image)
 
-            copy = background.copy()
-            copy.paste(frame, (384, 0), frame)
-
-            return copy
-
-        return get_image_response(for_each_frame(image, parse))
+        return get_image_response([background])
