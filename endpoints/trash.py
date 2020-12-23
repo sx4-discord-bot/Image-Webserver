@@ -19,4 +19,4 @@ class TrashHandler(SingleImageHandler):
 
             return copy
 
-        return get_image_response(for_each_frame(image, parse))
+        return get_image_response(for_each_frame(image, parse), transparency=255)

@@ -4,6 +4,7 @@ import requests
 from PIL import Image
 
 from handlers.handler import SingleImageHandler
+from utility.error import ErrorCode
 from utility.image import get_image_response, max_pixels, for_each_frame
 from utility.response import BadRequest
 
@@ -21,7 +22,7 @@ class FlagHandler(SingleImageHandler):
         flag_response = requests.get(f"http://www.geonames.org/flags/x/{flag}.gif", stream=True)
 
         if flag_response.status_code == 404:
-            raise BadRequest("Invalid flag code")
+            raise BadRequest("Invalid flag code", ErrorCode.INVALID_QUERY_VALUE)
 
         final_size = max_pixels(image.size, 200)
         flag_image = Image.open(BytesIO(flag_response.content)).convert("RGBA").resize(final_size)
