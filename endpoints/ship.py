@@ -22,9 +22,6 @@ class ShipHandler(MultipleImageHandler):
         if percent > 100 or percent < 1:
             raise BadRequest("Percent cannot be larger than 100 or less than 1", ErrorCode.INVALID_QUERY_VALUE)
 
-        blank = Image.new("RGBA", (930, 290), (255, 255, 255, 0))
-        border = create_avatar(Image.new("RGBA", (290, 290), (255, 255, 255, 255)))
-
         heart, heart_outline = get_image_asset("heart.png"), get_image_asset("heart-outline.png")
         width, height = heart.size
 
@@ -32,17 +29,31 @@ class ShipHandler(MultipleImageHandler):
 
         heart = heart.crop((0, pixels, width, height))
 
-        blank.paste(border, (0, 0), border)
-        blank.paste(border, (640, 0), border)
-        blank.paste(first_image, (5, 5), first_image)
-        blank.paste(second_image, (645, 5), second_image)
-        blank.paste(heart, (305, 0 + pixels), heart)
-        blank.paste(heart_outline, (305, 0), heart_outline)
+        first_frame_count, second_frame_count = first_image.n_frames, second_image.n_frames
+        frame_count = max(first_frame_count, second_frame_count)
 
-        return get_image_response([blank])
+        frames = []
+        for i in range(frame_count):
+            first_image.seek(i % first_frame_count)
+            second_image.seek(i % second_frame_count)
+
+            blank = Image.new("RGBA", (930, 290), (255, 255, 255, 0))
+            border = create_avatar(Image.new("RGBA", (290, 290), (255, 255, 255, 255)))
+
+            first_copy, second_copy = first_image.copy(), second_image.copy()
+            first_copy = create_avatar(first_copy.convert("RGBA").resize((280, 280)))
+            second_copy = create_avatar(second_copy.convert("RGBA").resize((280, 280)))
+
+            blank.paste(border, (0, 0), border)
+            blank.paste(border, (640, 0), border)
+            blank.paste(first_copy, (5, 5), first_copy)
+            blank.paste(second_copy, (645, 5), second_copy)
+            blank.paste(heart, (305, 0 + pixels), heart)
+            blank.paste(heart_outline, (305, 0), heart_outline)
+
+            frames.append(blank)
+
+        return get_image_response(frames)
 
     def image_queries(self):
         return [("first_image", False, True), ("second_image", False, True)]
-
-    def modify_images(self, images: List[type(Image)]) -> Any:
-        return [create_avatar(image.convert("RGBA").resize((280, 280))) for image in images]
