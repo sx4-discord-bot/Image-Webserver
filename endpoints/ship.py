@@ -25,6 +25,9 @@ class ShipHandler(MultipleImageHandler):
         heart, heart_outline = get_image_asset("heart.png"), get_image_asset("heart-outline.png")
         width, height = heart.size
 
+        print(first_image.mode)
+        print(second_image.mode)
+
         pixels = height - round(height / 100 * percent)
 
         heart = heart.crop((0, pixels, width, height))
@@ -33,16 +36,15 @@ class ShipHandler(MultipleImageHandler):
         frame_count = max(first_frame_count, second_frame_count)
 
         frames = []
-        for i in range(frame_count):
+        for i in range(1):
             first_image.seek(i % first_frame_count)
             second_image.seek(i % second_frame_count)
 
             blank = Image.new("RGBA", (930, 290), (255, 255, 255, 0))
             border = create_avatar(Image.new("RGBA", (290, 290), (255, 255, 255, 255)))
 
-            first_copy, second_copy = first_image.copy(), second_image.copy()
-            first_copy = create_avatar(first_copy.convert("RGBA").resize((280, 280)))
-            second_copy = create_avatar(second_copy.convert("RGBA").resize((280, 280)))
+            first_copy = create_avatar(first_image.convert("RGBA").resize((280, 280)))
+            second_copy = create_avatar(second_image.convert("RGBA").resize((280, 280)))
 
             blank.paste(border, (0, 0), border)
             blank.paste(border, (640, 0), border)
