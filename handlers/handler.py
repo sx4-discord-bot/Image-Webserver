@@ -168,6 +168,9 @@ class SingleImageHandler(MultipleImageHandler):
 
         image = None
         if not query and len(self.fields) == 0:
+            if self.request.method != "POST":
+                raise MethodNotAllowed("Use POST when providing the image in the body")
+
             data = self.request.data
             if not isinstance(data, bytes):
                 raise BadRequest("Body is meant to be bytes", ErrorCode.INVALID_BODY_BYTES)
@@ -176,9 +179,6 @@ class SingleImageHandler(MultipleImageHandler):
                 image = Image.open(BytesIO(data))
             except UnidentifiedImageError:
                 raise BadRequest("Could not resolve body to an image", ErrorCode.INVALID_IMAGE_BYTES)
-
-            if self.request.method != "POST":
-                raise MethodNotAllowed("Use POST when providing the image in the body")
         elif query:
             image = get_image(query, name, name_type)
 

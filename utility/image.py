@@ -116,6 +116,24 @@ def create_avatar(image: Image) -> Image:
     return output
 
 
+def crop_to_center(image: Image, size: Tuple[int, int]):
+    width, height = size
+    left = image.size[0] / 2 - width / 2
+    upper = image.size[1] / 2 - height / 2
+
+    return image.crop((left, upper, width + left, height + upper))
+
+
+def resize_to_ratio(image: Image, size: Tuple[int, int]) -> Image:
+    width, height = image.size
+    smallest = min(width, height)
+
+    ratio = size[0] / smallest if smallest == width else size[1] / smallest
+    image = image.resize((int(width * ratio), int(height * ratio)))
+
+    return crop_to_center(image, size)
+
+
 def max_pixels(image_size: Tuple[int, int], max_size: int) -> Tuple[int, int]:
     width, height = image_size
     if width and height < max_size:

@@ -25,8 +25,10 @@ class ShipHandler(MultipleImageHandler):
         heart, heart_outline = get_image_asset("heart.png"), get_image_asset("heart-outline.png")
         width, height = heart.size
 
-        print(first_image.mode)
-        print(second_image.mode)
+        background = Image.new("RGBA", (930, 290), (0, 0, 0, 0))
+        border = create_avatar(Image.new("RGBA", (290, 290), (255, 255, 255, 255)))
+        background.paste(border, (0, 0), border)
+        background.paste(border, (640, 0), border)
 
         pixels = height - round(height / 100 * percent)
 
@@ -40,20 +42,17 @@ class ShipHandler(MultipleImageHandler):
             first_image.seek(i % first_frame_count)
             second_image.seek(i % second_frame_count)
 
-            blank = Image.new("RGBA", (930, 290), (255, 255, 255, 0))
-            border = create_avatar(Image.new("RGBA", (290, 290), (255, 255, 255, 255)))
-
             first_copy = create_avatar(first_image.convert("RGBA").resize((280, 280)))
             second_copy = create_avatar(second_image.convert("RGBA").resize((280, 280)))
 
-            blank.paste(border, (0, 0), border)
-            blank.paste(border, (640, 0), border)
-            blank.paste(first_copy, (5, 5), first_copy)
-            blank.paste(second_copy, (645, 5), second_copy)
-            blank.paste(heart, (305, 0 + pixels), heart)
-            blank.paste(heart_outline, (305, 0), heart_outline)
+            background = background.copy()
 
-            frames.append(blank)
+            background.paste(first_copy, (5, 5), first_copy)
+            background.paste(second_copy, (645, 5), second_copy)
+            background.paste(heart, (305, pixels), heart)
+            background.paste(heart_outline, (305, 0), heart_outline)
+
+            frames.append(background)
 
         return get_image_response(frames)
 
