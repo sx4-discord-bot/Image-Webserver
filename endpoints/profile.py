@@ -8,10 +8,12 @@ from PIL import Image, ImageDraw
 from handlers.handler import SingleImageHandler
 from utility.colour import as_rgb_tuple
 from utility.image import create_avatar, get_image_response, get_image_asset, get_font_optimal, get_font_asset, \
-    get_text_newlined, resize_to_ratio
+    get_text_newlined, resize_to_ratio, draw_ellipse
 
 
 class ProfileHandler(SingleImageHandler):
+
+    DIRECTORY = "/root/{}/profile/banners/"
 
     def __init__(self, app):
         super().__init__(app)
@@ -22,36 +24,37 @@ class ProfileHandler(SingleImageHandler):
             (["name"], str),
             (["description"], str),
             (["birthday"], str),
-            (["background"], Optional[bytes]),
             (["married_users"], List[str]),
-            (["height"], str),
+            (["height"], int),
             (["reputation"], int),
             (["balance"], str),
-            (["colour", "color"], int)
+            (["colour", "color"], int),
+            (["banner_id"], Optional[str]),
+            (["directory"], str)
         ]
 
     def on_request(self, avatar: Image):
         name = self.body("name")
         description = self.body("description")
         birthday = self.body("birthday")
-        height = self.body("height")
+        height = self.body("height", int)
         married_users = self.body("married_users", list)[:5]
         balance = self.body("balance")
-        background = self.body("background", list)
-        background = None if background is None else BytesIO(bytearray([x % 256 for x in background]))
+        banner_id = self.body("banner_id", str)
+        directory = self.body("directory", str)
         reputation = self.body("reputation", int)
-        colour = as_rgb_tuple(self.body("colour", int, 16777215) or self.body("color", int, 16777215))
+        colour_int = self.body("colour", int, 13997604) or self.body("color", int, 13997604)
+        colour = as_rgb_tuple(colour_int)
 
-        if background:
-            image = resize_to_ratio(Image.open(background).convert("RGBA"), (935, 567))
-
-            overlay = Image.new("RGBA", image.size, (41, 40, 39, 0))
-            draw = ImageDraw.Draw(overlay)
-            draw.rectangle((0, 567, 935, 0), (41, 40, 39, 216))
-
-            image = Image.alpha_composite(image, overlay)
-        else:
+        if banner_id is None:
             image = Image.new("RGBA", (935, 567), (41, 40, 39))
+        else:
+            with resize_to_ratio(Image.open(ProfileHandler.DIRECTORY.format(directory) + banner_id), (935, 567)) as image:
+                overlay = Image.new("RGBA", image.size, (41, 40, 39, 0))
+                draw = ImageDraw.Draw(overlay)
+                draw.rectangle((0, 567, 935, 0), (41, 40, 39, 216))
+
+                image = Image.alpha_composite(image, overlay)
 
         poppins_name = get_font_asset("poppins/Poppins-Medium.ttf", 42)
         poppins_title = get_font_asset("poppins/Poppins-Medium.ttf", 20)
@@ -69,11 +72,11 @@ class ProfileHandler(SingleImageHandler):
         draw.line((935 - 12, 0, 935 - 12, 567), colour, 24)
 
         reputation_width, reputation_height = draw.textsize(str(reputation), poppins_rep)
-        total_width = 34 + reputation_width
+        total_width = 34 + reputation_width + 4
 
         draw.rectangle((935 - 188, 0, 935, 63), colour)
-        draw.text(((935 - 200) + ((188 - total_width) / 2), 7), str(reputation), (255, 250, 245), poppins_rep)
-        draw.text(((935 - 200) + ((188 - total_width) / 2) + reputation_width, 6), "REP", (41, 40, 39), poppins_rep)
+        draw.text(((935 - 202) + ((188 - total_width) / 2), 7), str(reputation), (255, 250, 245), poppins_rep)
+        draw.text(((935 - 198) + ((188 - total_width) / 2) + reputation_width, 6), "REP", (41, 40, 39), poppins_rep)
 
         username, discrim = name.split("#")
         discrim_width, discrim_height = draw.textsize("#" + discrim, poppins_name)
@@ -86,7 +89,7 @@ class ProfileHandler(SingleImageHandler):
         draw.text((270, 204 - 23), birthday, (247, 246, 245), poppins_text)
 
         draw.text((472, 172 - 20), "HEIGHT", colour, poppins_title)
-        draw.text((472, 202 - 23), height, (247, 246, 245), poppins_text)
+        draw.text((472, 202 - 23), f"{height}cm", (247, 246, 245), poppins_text)
 
         draw.text((654, 169 - 20), "BALANCE", colour, poppins_title)
         draw.text((654, 202 - 23), f"${balance}", (247, 246, 245), poppins_text)
@@ -97,8 +100,8 @@ class ProfileHandler(SingleImageHandler):
         draw.text((652, 293 - 20), "PARTNERS", colour, poppins_title)
         draw.text((652, 320 - 23), "\n".join([get_text_newlined(user.split("#")[0], poppins_text, 250, 1) for user in married_users]) if len(married_users) > 0 else "No one :(", (247, 246, 245), poppins_text)
 
-        avatar_outline = create_avatar(Image.new("RGBA", (214, 214), (255, 255, 255)))
-        image.paste(avatar_outline, (31, 31), avatar_outline)
+        draw_ellipse(image, (31, 31, 245, 245), 1, (255, 255, 255), 4)
+
         image.paste(avatar, (34, 34), avatar)
 
         return get_image_response([image])
@@ -203,4 +206,4 @@ class ProfileHandler(SingleImageHandler):
         return [("avatar", True, True)]
 
     def modify_images(self, images):
-        return create_avatar(images[0].convert("RGBA").resize((208, 208)))
+        return create_avatar(images[0].convert("RGBA").resize((208, 208), Image.ANTIALIAS))

@@ -14,7 +14,8 @@ IMAGE_ASSET_PATH = "resources/images/"
 FONT_ASSET_PATH = "resources/fonts/"
 
 
-def get_text_array(text: str, font: ImageFont, max_width: int, width: int = 0, strip: bool = True, max_lines: int = -1) -> List[str]:
+def get_text_array(text: str, font: ImageFont, max_width: int, width: int = 0, strip: bool = True,
+                   max_lines: int = -1) -> List[str]:
     text = text.strip() if strip else text
 
     final_lines = []
@@ -96,6 +97,34 @@ def get_font_asset(path: str, size: int) -> ImageFont:
     return ImageFont.truetype(FONT_ASSET_PATH + path, size)
 
 
+def draw_ellipse(image, bounds, width=1, outline="white", antialias=4):
+    mask = Image.new(size=[int(dim * antialias) for dim in image.size], mode="L", color="black")
+    draw = ImageDraw.Draw(mask)
+
+    offset = width / -2.0
+    left, top = [(value + offset) * antialias for value in bounds[:2]]
+    right, bottom = [(value - offset) * antialias for value in bounds[2:]]
+    draw.ellipse((left, top, right, bottom), fill="white")
+
+    mask = mask.resize(image.size, Image.LANCZOS)
+
+    image.paste(outline, mask=mask)
+
+
+def draw_pieslice(image, bounds, width=1, start=0, end=360, outline="white", antialias=4):
+    mask = Image.new(size=[int(dim * antialias) for dim in image.size], mode="L", color="black")
+    draw = ImageDraw.Draw(mask)
+
+    offset = width / -2.0
+    left, top = [(value + offset) * antialias for value in bounds[:2]]
+    right, bottom = [(value - offset) * antialias for value in bounds[2:]]
+    draw.pieslice((left, top, right, bottom), start=start, end=end, fill="white")
+
+    mask = mask.resize(image.size, Image.HAMMING)
+
+    image.paste(outline, mask=mask)
+
+
 def get_font_optimal(path: str, start: int, text: str, max_width: int) -> ImageFont:
     font = get_font_asset(path, start)
     while font.getsize(text)[0] > max_width:
@@ -108,7 +137,7 @@ def get_font_optimal(path: str, start: int, text: str, max_width: int) -> ImageF
 def create_avatar(image: Image) -> Image:
     mask = Image.new("L", image.size, 0)
     draw = ImageDraw.Draw(mask)
-    draw.ellipse((0, 0) + image.size, fill=255)
+    draw_ellipse(mask, (0, 0) + image.size)
 
     output = ImageOps.fit(image, mask.size, centering=(0.5, 0.5))
     output.putalpha(mask)
@@ -126,10 +155,14 @@ def crop_to_center(image: Image, size: Tuple[int, int]):
 
 def resize_to_ratio(image: Image, size: Tuple[int, int]) -> Image:
     width, height = image.size
-    smallest = min(width, height)
+    if width < height and size[0] > size[1]:
+        scale = size[0] / width
+    elif height < width and size[1] > size[0]:
+        scale = size[1] / height
+    else:
+        scale = max(size[0] / width, size[1] / height)
 
-    ratio = size[0] / smallest if smallest == width else size[1] / smallest
-    image = image.resize((int(width * ratio), int(height * ratio)))
+    image = image.resize((int(width * scale), int(height * scale)))
 
     return crop_to_center(image, size)
 
@@ -151,7 +184,7 @@ def for_each_frame(image: Image, function: Callable[[type(Image)], type(Image)])
     return frames
 
 
-def get_image_response(frames: List[type(Image)], transparency: int = 0) -> Response:
+def get_image_response(frames: List[type(Image)], transparency: int = 0, loop: bool = False, quality: int = 100) -> Response:
     frame_count = len(frames)
     png = frame_count == 1
     f = "png" if png else "gif"
@@ -160,10 +193,10 @@ def get_image_response(frames: List[type(Image)], transparency: int = 0) -> Resp
 
     b = BytesIO()
     if png:
-        first_frame.save(b, format=f)
+        first_frame.save(b, format=f, quality=quality)
     else:
-        first_frame.save(b, format=f, save_all=True, append_images=frames[1:], loop=0, optimize=True, disposal=2,
-                         transparency=transparency)
+        first_frame.save(b, format=f, save_all=True, append_images=frames[1:], loop=loop, optimize=True, disposal=2,
+                         transparency=transparency, quality=quality)
 
     b.seek(0)
 
