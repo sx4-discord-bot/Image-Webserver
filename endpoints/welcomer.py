@@ -43,18 +43,20 @@ class WelcomerHandler(SingleImageHandler):
         name_height = name_font.getmetrics()[0] - y
 
         if banner_id is not None:
+            temp = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
+            temp.paste(text_holder, (175, 220), text_holder)
+            temp.paste(avatar_outline, (0, 205), avatar_outline)
+            temp.paste(avatar, (5, 210), avatar)
+
+            draw = ImageDraw.Draw(temp)
+            draw.text(((1420 - welcome_width) / 2, 240), "Welcome", (255, 255, 255), welcome_font)
+            draw.text(((1420 - name_width) / 2, 385 - name_height), name, (255, 255, 255), name_font)
+            draw.text(((1420 - name_width) / 2 + name_width, 352), discrim, (153, 170, 183), welcome_font)
+
             with Image.open(WelcomerHandler.DIRECTORY.format(directory) + banner_id) as banner:
                 def parse(frame):
                     frame = resize_to_ratio(frame.convert("RGBA"), (1280, 720))
-
-                    frame.paste(text_holder, (175, 220), text_holder)
-                    frame.paste(avatar_outline, (0, 205), avatar_outline)
-                    frame.paste(avatar, (5, 210), avatar)
-
-                    draw = ImageDraw.Draw(frame)
-                    draw.text(((1420 - welcome_width) / 2, 240), "Welcome", (255, 255, 255), welcome_font)
-                    draw.text(((1420 - name_width) / 2, 385 - name_height), name, (255, 255, 255), name_font)
-                    draw.text(((1420 - name_width) / 2 + name_width, 352), discrim, (153, 170, 183), welcome_font)
+                    frame.paste(temp, (0, 0), temp)
 
                     return frame
 

@@ -134,10 +134,9 @@ def get_font_optimal(path: str, start: int, text: str, max_width: int) -> ImageF
     return font
 
 
-def create_avatar(image: Image) -> Image:
+def create_avatar(image: Image, antialias: int = 4) -> Image:
     mask = Image.new("L", image.size, 0)
-    draw = ImageDraw.Draw(mask)
-    draw_ellipse(mask, (0, 0) + image.size)
+    draw_ellipse(mask, (0, 0) + image.size, antialias=antialias)
 
     output = ImageOps.fit(image, mask.size, centering=(0.5, 0.5))
     output.putalpha(mask)
