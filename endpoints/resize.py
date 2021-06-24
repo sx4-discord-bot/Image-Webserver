@@ -32,6 +32,9 @@ class ResizeHandler(SingleImageHandler):
         if width < 1 or height < 1:
             raise BadRequest("width or height is a negative number", ErrorCode.INVALID_QUERY_VALUE)
 
+        if width > 5000 or height > 5000:
+            raise BadRequest("Neither width or height can be more than 5000 pixels in size", ErrorCode.INVALID_QUERY_VALUE)
+
         frames = for_each_frame(image, lambda frame: frame.resize((int(width), int(height))))
 
         return get_image_response(frames)

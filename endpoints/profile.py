@@ -84,7 +84,7 @@ class ProfileHandler(SingleImageHandler):
         draw.text((270, 204 - 23), birthday, (247, 246, 245), poppins_text)
 
         draw.text((472, 172 - 20), "HEIGHT", colour, poppins_title)
-        draw.text((472, 202 - 23), f"{height}cm", (247, 246, 245), poppins_text)
+        draw.text((472, 202 - 23), "Not set" if height == 0 else f"{height}cm", (247, 246, 245), poppins_text)
 
         draw.text((654, 169 - 20), "BALANCE", colour, poppins_title)
         draw.text((654, 202 - 23), f"${balance}", (247, 246, 245), poppins_text)
