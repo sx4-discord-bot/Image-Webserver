@@ -72,8 +72,8 @@ class DiscordHandler(SingleImageHandler):
         if len(text) > 250:
             raise BadRequest("Text at max can be 250 characters in length", ErrorCode.INVALID_FIELD_VALUE)
 
+        mention_font = get_font_asset("whitney/Whitney-Medium.ttf", 34)
         text_font = get_font_asset("whitney/whitney-book.otf", 34)
-        name_font = get_font_asset("whitney/Whitney-Medium.ttf", 40)
         time_font = get_font_asset("whitney/WhitneyLight.ttf", 24)
 
         bot_tag = get_image_asset("bot-tag.png")
@@ -140,42 +140,42 @@ class DiscordHandler(SingleImageHandler):
 
         draw = ImageDraw.Draw(blank)
 
-        name_width = name_font.getsize(name)[0]
-        draw.text((160, 6), name, colour, name_font)
-        draw.text((170 + name_width + (66 if bot else 0), 18), f"Today at {datetime.utcnow().strftime('%H:%M')}", (122, 125, 130), time_font)
+        name_width = mention_font.getsize(name)[0]
+        draw.text((160, 9), name, colour, mention_font)
+        draw.text((167 + name_width + (66 if bot else 0), 18), f"Today at {datetime.utcnow().strftime('%H:%M')}", (114, 118, 125), time_font)
 
         if bot:
-            blank.paste(bot_tag, (170 + name_width, 2), bot_tag)
+            blank.paste(bot_tag, (167 + name_width, 2), bot_tag)
 
         width, height = 0, 60
         for text_type in text_types:
             if text_type.mention:
                 text_type_width = text_type.width(text_font)
-                print(text_type_width)
                 if width + text_type_width > 820:
                     width = 0
                     height += 34
 
-                if text_type.mention_type == 2:
-                    mention_colour = as_rgb_tuple(text_type.data.get("colour", 7506394))
+                colour = text_type.data.get("colour")
+                if text_type.mention_type == 2 and colour is not None:
+                    mention_colour = as_rgb_tuple(colour)
                     mention_box_colour = mention_colour + (26,)
                     text_colour = mention_colour
                 else:
-                    mention_box_colour = (114, 137, 218, 26)
-                    text_colour = (114, 137, 218)
+                    mention_box_colour = (88, 101, 242, 77) if dark_theme else (88, 101, 242, 38)
+                    text_colour = (222, 224, 252) if dark_theme else (80, 92, 220)
 
                 if text_type.mention_type == 4:
                     emote = get_image(str(text_type)).convert("RGBA").resize((30, 30))
                     blank.paste(emote, (width + 160, height + 6), emote)
                 else:
                     draw.rectangle((width + 160, height + 5, width + 160 + text_type_width, height + 37), mention_box_colour)
-                    draw.text((width + 160, height), str(text_type), text_colour, text_font)
+                    draw.text((width + 160, height), str(text_type), text_colour, mention_font)
 
                 width += text_type_width
             else:
                 lines = get_text_array(str(text_type), text_font, 820, width, False)
                 for i, line in enumerate(lines):
-                    draw.text((width + 160, height), line, (255, 255, 255) if dark_theme else (116, 127, 141), text_font)
+                    draw.text((width + 160, height), line, (220, 221, 222) if dark_theme else (116, 127, 141), text_font)
 
                     if i == len(lines) - 1:
                         width += text_font.getsize(line)[0]
