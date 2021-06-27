@@ -30,6 +30,9 @@ class ProfileHandler(SingleImageHandler):
             (["reputation"], int),
             (["balance"], str),
             (["colour", "color"], int),
+            (["commands"], int),
+            (["games_played"], int),
+            (["games_won"], int),
             (["banner_id"], Optional[str]),
             (["directory"], str),
             (["gif"], Optional[bool])
@@ -42,16 +45,19 @@ class ProfileHandler(SingleImageHandler):
         height = self.body("height", int)
         married_users = self.body("married_users", list)[:5]
         balance = self.body("balance")
-        gif = self.body("gif", bool, False)
+        games_played = self.body("games_played", int)
+        games_won = self.body("games_won", int)
+        commands = self.body("commands", int)
+        gif = self.body("gif", boolean, False)
         banner_id = self.body("banner_id", str)
         directory = self.body("directory", str)
         reputation = self.body("reputation", int)
         colour_int = self.body("colour", int, 13997604) or self.body("color", int, 13997604)
         colour = as_rgb_tuple(colour_int)
 
-        poppins_name = get_font_asset("poppins/Poppins-Medium.ttf", 42)
-        poppins_title = get_font_asset("poppins/Poppins-Medium.ttf", 20)
-        poppins_text = get_font_asset("poppins/Poppins-Medium.ttf", 23)
+        poppins_name = get_font_asset("poppins/Poppins-Medium.ttf", 40)
+        poppins_title = get_font_asset("poppins/Poppins-Medium.ttf", 18)
+        poppins_text = get_font_asset("poppins/Poppins-Medium.ttf", 21)
         poppins_rep = get_font_asset("poppins/Poppins-Medium.ttf", 32)
 
         card = Image.new("RGBA", (935, 567), (0, 0, 0, 0))
@@ -75,28 +81,34 @@ class ProfileHandler(SingleImageHandler):
 
         username, discrim = name.split("#")
         discrim_width, discrim_height = draw.textsize("#" + discrim, poppins_name)
-        limited_username = get_text_newlined(username, poppins_name, 620 - discrim_width, 1)
+        limited_username = get_text_newlined(username, poppins_name, 480 - discrim_width, 1)
 
-        draw.text((270, 78 - 20), "NAME", colour, poppins_title)
-        draw.text((268, 125 - 42), limited_username + "#" + discrim, (247, 246, 245), poppins_name)
+        draw.text((270, 56 - 18), "NAME", colour, poppins_title)
+        draw.text((268, 99 - 40), limited_username + "#" + discrim, (247, 246, 245), poppins_name)
 
-        draw.text((270, 172 - 20), "BIRTHDAY", colour, poppins_title)
-        draw.text((270, 204 - 23), birthday, (247, 246, 245), poppins_text)
+        draw.text((270, 142 - 18), "BIRTHDAY", colour, poppins_title)
+        draw.text((270, 168 - 21), birthday, (247, 246, 245), poppins_text)
 
-        draw.text((472, 172 - 20), "HEIGHT", colour, poppins_title)
-        draw.text((472, 202 - 23), "Not set" if height == 0 else f"{height}cm", (247, 246, 245), poppins_text)
+        draw.text((472, 142 - 18), "HEIGHT", colour, poppins_title)
+        draw.text((472, 168 - 21), "Not set" if height == 0 else f"{height}cm", (247, 246, 245), poppins_text)
 
-        draw.text((654, 169 - 20), "BALANCE", colour, poppins_title)
-        draw.text((654, 202 - 23), f"${balance}", (247, 246, 245), poppins_text)
+        draw.text((654, 142 - 18), "BALANCE", colour, poppins_title)
+        draw.text((654, 168 - 21), f"${balance}", (247, 246, 245), poppins_text)
 
-        draw.text((50, 293 - 20), "DESCRIPTION", colour, poppins_title)
-        draw.text((50, 320 - 23), get_text_newlined(description, poppins_text, 500, 7), (247, 246, 245),
-                  poppins_text)
+        draw.text((269, 218 - 18), "GAMES PLAYED", colour, poppins_title)
+        draw.text((270, 244 - 21), f"{games_played:,}", (247, 246, 245), poppins_text)
 
-        draw.text((652, 293 - 20), "PARTNERS", colour, poppins_title)
-        draw.text((652, 320 - 23), "\n".join(
-            [get_text_newlined(user, poppins_text, 250, 1) for user in married_users]) if len(
-            married_users) > 0 else "No one :(", (247, 246, 245), poppins_text)
+        draw.text((471, 218 - 18), "GAMES WON", colour, poppins_title)
+        draw.text((472, 244 - 21), f"{games_won:,}", (247, 246, 245), poppins_text)
+
+        draw.text((653, 218 - 18), "COMMANDS USED", colour, poppins_title)
+        draw.text((654, 244 - 21), f"{commands:,}", (247, 246, 245), poppins_text)
+
+        draw.text((50, 294 - 18), "DESCRIPTION", colour, poppins_title)
+        draw.text((50, 320 - 21), get_text_newlined(description, poppins_text, 500, 7), (247, 246, 245), poppins_text)
+
+        draw.text((652, 294 - 18), "PARTNERS", colour, poppins_title)
+        draw.text((652, 320 - 21), "\n".join([get_text_newlined(user, poppins_text, 250, 1) for user in married_users]) if len(married_users) > 0 else "No one :(", (247, 246, 245), poppins_text)
 
         draw_ellipse(card, (31, 31, 245, 245), 1, (255, 255, 255), 4)
 
@@ -121,8 +133,6 @@ class ProfileHandler(SingleImageHandler):
                     return frame
 
                 return get_image_response(for_each_frame(image, parse) if gif else [parse(image)], transparency=255)
-
-
 
     def image_queries(self):
         return [("avatar", True, True)]
