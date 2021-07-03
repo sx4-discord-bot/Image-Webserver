@@ -48,7 +48,7 @@ class ProfileHandler(SingleImageHandler):
         games_played = self.body("games_played", int)
         games_won = self.body("games_won", int)
         commands = self.body("commands", int)
-        gif = self.body("gif", boolean, False)
+        gif = self.body("gif", bool, False)
         banner_id = self.body("banner_id", str)
         directory = self.body("directory", str)
         reputation = self.body("reputation", int)
