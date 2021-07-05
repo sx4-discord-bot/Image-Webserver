@@ -25,6 +25,7 @@ class ProfileHandler(SingleImageHandler):
             (["name"], str),
             (["description"], str),
             (["birthday"], str),
+            (["is_birthday"], Optional[bool]),
             (["married_users"], List[str]),
             (["height"], int),
             (["reputation"], int),
@@ -42,6 +43,7 @@ class ProfileHandler(SingleImageHandler):
         name = self.body("name")
         description = self.body("description")
         birthday = self.body("birthday")
+        is_birthday = self.body("is_birthday", bool, False)
         height = self.body("height", int)
         married_users = self.body("married_users", list)[:5]
         balance = self.body("balance")
@@ -111,6 +113,12 @@ class ProfileHandler(SingleImageHandler):
         draw.text((652, 320 - 21), "\n".join([get_text_newlined(user, poppins_text, 250, 1) for user in married_users]) if len(married_users) > 0 else "No one :(", (247, 246, 245), poppins_text)
 
         draw_ellipse(card, (31, 31, 245, 245), 1, (255, 255, 255), 4)
+
+        if is_birthday:
+            cake = get_image_asset("cake.png")
+            width, height = poppins_text.getsize(birthday)
+
+            card.paste(cake, (275 + width, 168 - 21))
 
         card.paste(avatar, (34, 34), avatar)
 

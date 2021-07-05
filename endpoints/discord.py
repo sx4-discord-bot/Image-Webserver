@@ -84,7 +84,7 @@ class DiscordHandler(SingleImageHandler):
         i = 0
         while i < len(text):
             character = text[i]
-            if character == "<" and i + 1 < len(text):
+            if character == "<" and i + 2 < len(text):
                 first_character = text[i + 1]
                 second_character = text[i + 2]
                 greater_index = text.find(">", i)
