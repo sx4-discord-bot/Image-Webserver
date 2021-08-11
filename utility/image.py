@@ -1,12 +1,14 @@
 from io import BytesIO
 from math import ceil
 from typing import Tuple, List, Callable
+from urllib.parse import urlparse, urlencode
 
 import requests
 from PIL import Image, ImageOps, ImageDraw, ImageFont, ImageSequence, UnidentifiedImageError
 from flask import Response, send_file
 from requests.exceptions import MissingSchema, ConnectionError, InvalidSchema, InvalidURL
 
+from utility import config
 from utility.error import ErrorCode
 from utility.response import BadRequest
 
@@ -78,9 +80,17 @@ def get_text_newlined(text: str, font: ImageFont, max_width: int, max_lines: int
     return "\n".join(get_text_array(text, font, max_width, 0, True, max_lines))
 
 
+def get_worker_url(url: str) -> str:
+    uri = urlparse(url)
+    if uri.netloc.endswith("discordapp.com"):
+        return url
+
+    return "https://" + config.get("worker") + "?" + urlencode({"url": url})
+
+
 def get_image(url: str, name: str = "Unknown", name_type: str = "N/A") -> Image:
     try:
-        return Image.open(BytesIO(requests.get(url, stream=True).content))
+        return Image.open(BytesIO(requests.get(get_worker_url(url), stream=True).content))
     except (MissingSchema, InvalidSchema, InvalidURL):
         raise BadRequest(f"Invalid url given for the {name_type} {name}", ErrorCode.INVALID_URL)
     except UnidentifiedImageError:
@@ -169,7 +179,8 @@ def for_each_frame(image: Image, function: Callable[[type(Image)], type(Image)])
     return frames
 
 
-def get_image_response(frames: List[type(Image)], transparency: int = 0, loop: bool = False, quality: int = 100) -> Response:
+def get_image_response(frames: List[type(Image)], transparency: int = 0, loop: bool = False,
+                       quality: int = 100) -> Response:
     frame_count = len(frames)
     png = frame_count == 1
     f = "png" if png else "gif"

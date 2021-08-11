@@ -1,4 +1,3 @@
-import json
 from functools import wraps
 from io import BytesIO
 from typing import Any, Type, List, Tuple, Optional
@@ -6,11 +5,10 @@ from typing import Any, Type, List, Tuple, Optional
 from PIL import Image, UnidentifiedImageError
 from flask import request
 
+from utility.config import config
 from utility.error import ErrorCode
 from utility.image import get_image, get_image_response, for_each_frame
 from utility.response import BadRequest, Unauthorized, MethodNotAllowed
-
-config = json.load(open("config.json"))
 
 
 def check_names(t, names, queries, field):
@@ -37,7 +35,7 @@ def check_authorization(f):
         if not authorization:
             raise Unauthorized("Authorization header not given")
 
-        if authorization != self.config["auth"]:
+        if authorization != config.get("auth"):
             raise Unauthorized("Invalid authorization header")
 
         return f(self)
@@ -81,7 +79,6 @@ class Handler:
         self.request = request
         self.methods = ["GET"]
         self.app = app
-        self.config = config
         self.require_authorization = True
         self.aliases = []
         self.queries = []
