@@ -147,7 +147,7 @@ class DiscordHandler(SingleImageHandler):
         if bot:
             blank.paste(bot_tag, (167 + name_width, 2), bot_tag)
 
-        width, height = 0, 60
+        width, height = 0, 50
         for text_type in text_types:
             if text_type.mention:
                 text_type_width = text_type.width(text_font)
@@ -185,7 +185,7 @@ class DiscordHandler(SingleImageHandler):
 
                         height += 34
 
-        background = Image.new("RGBA", (1000, max(height + 25, 120)), (54, 57, 63) if dark_theme else (255, 255, 255))
+        background = Image.new("RGBA", (1000, max(height + 42, 120)), (54, 57, 63) if dark_theme else (255, 255, 255))
         background.paste(blank, (0, 0), blank)
 
         def parse(frame):
