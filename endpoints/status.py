@@ -20,18 +20,18 @@ class StatusHandler(SingleImageHandler):
 
         status_icon = get_image_asset(f"{status}.png")
 
-        blank = Image.new("RGBA", (270, 270), (255, 255, 255, 0))
+        blank = Image.new("RGBA", (240, 240), (255, 255, 255, 0))
 
         def parse(frame):
-            frame = create_avatar(frame.convert("RGBA").resize((270, 270)))
+            frame = create_avatar(frame.convert("RGBA").resize((240, 240)))
 
             draw = ImageDraw.Draw(frame)
 
-            draw.ellipse((204, 204, 270, 270), fill=255)
+            draw.ellipse((160, 160, 240, 240), fill=255)
 
             copy = blank.copy()
             copy.paste(frame, (0, 0), frame)
-            copy.paste(status_icon, (213, 213), status_icon)
+            copy.paste(status_icon, (175, 175), status_icon)
 
             return copy
 
