@@ -7,7 +7,7 @@ from handlers.handler import SingleImageHandler
 from utility.colour import as_rgb_tuple
 from utility.error import ErrorCode
 from utility.image import get_font_asset, get_image_asset, get_text_array, get_image_response, get_image, \
-    for_each_frame, create_avatar
+    for_each_frame, create_avatar, resize_to_ratio
 from utility.response import BadRequest
 
 
@@ -26,7 +26,7 @@ class TextType:
         self.data = {} if data is None else data
 
     def width(self, font: ImageFont = None) -> int:
-        return 30 if self.mention_type == 4 else font.getsize(self.string)[0]
+        return 35 if self.mention_type == 4 else font.getsize(self.string)[0]
 
     @property
     def mention(self):
@@ -111,8 +111,9 @@ class DiscordHandler(SingleImageHandler):
                     elif first_character == "#":
                         channel_id = text[i + 2:greater_index]
                         if channel_id.isdigit() and channel_id in channels.keys():
-                            text_types.append(TextType(f"#{channels.get(channel_id).get('name')}", 3, channel_id))
+                            text_types.append(TextType("".join(builder), 0, None))
                             builder = []
+                            text_types.append(TextType(f"#{channels.get(channel_id).get('name')}", 3, channel_id))
                         else:
                             builder.append("#deleted-channel")
 
@@ -165,7 +166,7 @@ class DiscordHandler(SingleImageHandler):
                     text_colour = (222, 224, 252) if dark_theme else (80, 92, 220)
 
                 if text_type.mention_type == 4:
-                    emote = get_image(str(text_type)).convert("RGBA").resize((30, 30))
+                    emote = resize_to_ratio(get_image(str(text_type)).convert("RGBA"), (35, 35))
                     blank.paste(emote, (width + 160, height + 6), emote)
                 else:
                     draw.rectangle((width + 160, height + 5, width + 160 + text_type_width, height + 37), mention_box_colour)
