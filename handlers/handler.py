@@ -35,10 +35,13 @@ def check_authorization(f):
         if not authorization:
             raise Unauthorized("Authorization header not given")
 
-        if authorization != config.get("auth"):
-            raise Unauthorized("Invalid authorization header")
+        auth = config.get("auth")
+        for key in auth:
+            if auth[key] == authorization:
+                self.authorization_type = key
+                return f(self)
 
-        return f(self)
+        raise Unauthorized("Invalid authorization header")
 
     return wrapper
 
@@ -80,10 +83,11 @@ class Handler:
         self.methods = ["GET"]
         self.app = app
         self.require_authorization = True
+        self.authorization_type = None
         self.aliases = []
         self.queries = []
         self.fields = []
-        self.name = self.__module__.split(".")[-1]  # -1 in case the root of the file changes
+        self.name = self.__module__.split(".")[-1]
 
     @check_authorization
     @check_fields

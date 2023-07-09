@@ -14,7 +14,7 @@ class CannyHandler(SingleImageHandler):
         gif = image.n_frames > 1
 
         def parse(frame):
-            canny = feature.canny(rgb2gray(np.array(frame, dtype=np.uint8)), sigma=1)
+            canny = feature.canny(rgb2gray(np.array(frame.convert("RGB"), dtype=np.uint8)), sigma=1)
             if gif:
                 canny = np.uint8(canny)
 

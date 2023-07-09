@@ -30,12 +30,14 @@ class WelcomerHandler(SingleImageHandler):
         avatar_outline = create_avatar(Image.new("RGBA", (310, 310), (255, 255, 255)))
 
         split = name.split("#")
-        name = split[0]
-        discrim = "#" + split[1]
+        discriminator = None
+        discriminator_width = 0
+        if len(split) == 2:
+            name = split[0]
+            discriminator = "#" + split[1]
+            discriminator_width = welcome_font.getsize(discriminator)[0]
 
-        discrim_width = welcome_font.getsize(discrim)[0]
-
-        name_font = get_font_optimal("uni-sans.otf", 100, name, 1025 - discrim_width * 2)
+        name_font = get_font_optimal("uni-sans.otf", 100, name, 1025 - discriminator_width * 2)
 
         # very hacky way to vertically align the text
         name_width = name_font.getsize(name)[0]
@@ -51,7 +53,9 @@ class WelcomerHandler(SingleImageHandler):
             draw = ImageDraw.Draw(temp)
             draw.text(((1420 - welcome_width) / 2, 240), "Welcome", (255, 255, 255), welcome_font)
             draw.text(((1420 - name_width) / 2, 385 - name_height), name, (255, 255, 255), name_font)
-            draw.text(((1420 - name_width) / 2 + name_width, 352), discrim, (153, 170, 183), welcome_font)
+
+            if discriminator:
+                draw.text(((1420 - name_width) / 2 + name_width, 352), discriminator, (153, 170, 183), welcome_font)
 
             with Image.open(WelcomerHandler.DIRECTORY.format(directory) + banner_id) as banner:
                 def parse(frame):
@@ -70,7 +74,9 @@ class WelcomerHandler(SingleImageHandler):
             draw = ImageDraw.Draw(banner)
             draw.text(((1420 - welcome_width) / 2, 35), "Welcome", (255, 255, 255), welcome_font)
             draw.text(((1420 - name_width) / 2, 180 - name_height), name, (255, 255, 255), name_font)
-            draw.text(((1420 - name_width) / 2 + name_width, 147), discrim, (153, 170, 183), welcome_font)
+
+            if discriminator:
+                draw.text(((1420 - name_width) / 2 + name_width, 147), discriminator, (153, 170, 183), welcome_font)
 
             return get_image_response([banner])
 
