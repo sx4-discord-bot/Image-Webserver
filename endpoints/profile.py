@@ -81,12 +81,17 @@ class ProfileHandler(SingleImageHandler):
         draw.text(((935 - 202) + ((188 - total_width) / 2), 7), str(reputation), (255, 250, 245), poppins_rep)
         draw.text(((935 - 198) + ((188 - total_width) / 2) + reputation_width, 6), "REP", (41, 40, 39), poppins_rep)
 
-        username, discrim = name.split("#")
-        discrim_width, discrim_height = draw.textsize("#" + discrim, poppins_name)
-        limited_username = get_text_newlined(username, poppins_name, 480 - discrim_width, 1)
+        split = name.split("#")
+        if len(split) == 2:
+            username, discriminator = split
+            discriminator_width, _ = draw.textsize("#" + discriminator, poppins_name)
+        else:
+            username, discriminator, discriminator_width = name, None, 0
+
+        limited_username = get_text_newlined(username, poppins_name, 480 - discriminator_width, 1)
 
         draw.text((270, 56 - 18), "NAME", colour, poppins_title)
-        draw.text((268, 99 - 40), limited_username + "#" + discrim, (247, 246, 245), poppins_name)
+        draw.text((268, 99 - 40), limited_username + ("#" + discriminator if discriminator else ""), (247, 246, 245), poppins_name)
 
         draw.text((270, 142 - 18), "BIRTHDAY", colour, poppins_title)
         draw.text((270, 168 - 21), birthday, (247, 246, 245), poppins_text)
