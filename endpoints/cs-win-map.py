@@ -32,24 +32,25 @@ class CSWinMapHandler(Handler):
         width, height = 1024, 1024
         center = width / 2
         radius = width / 3
+        offset = 20
 
         map_size = int(width / 10), int(height / 10)
 
         image = Image.new("RGBA", (width, height), (128, 128, 128, 30))
         draw = ImageDraw.Draw(image)
 
-        points = []
+        points, lines, images = [], [], []
         for index, name in enumerate(maps):
             percent = maps[name] / max_wins
             cos_x, sin_y = cos(start_angle + index * angle), sin(start_angle + index * angle)
-            x, y = center + radius * (cos_x * percent), center + radius * (sin_y * percent)
-            points.append((x + (cos_x * 20), y + (sin_y * 20)))
+            x, y = center + radius * (cos_x * percent) + (cos_x * offset), center + radius * (sin_y * percent) + (sin_y * offset)
+            points.append((x, y))
+
+            lines.append((center + radius * cos_x + (cos_x * offset * 4), center + radius * sin_y + (sin_y * offset * 4), center + (cos_x * offset), center + (sin_y * offset)))
 
             try:
                 map_image = get_image_asset(f"cs2/de_{name}.png").resize(map_size)
-                image.paste(map_image, (int(center + radius * cos_x - (map_size[0] / 2) + (cos_x * map_size[0])),
-                                        int(center + radius * sin_y - (map_size[1] / 2) + (sin_y * map_size[1]))),
-                            map_image)
+                images.append((map_image, int(center + radius * cos_x - (map_size[0] / 2) + (cos_x * map_size[0])), int(center + radius * sin_y - (map_size[1] / 2) + (sin_y * map_size[1]))))
             except:
                 pass
 
@@ -61,7 +62,7 @@ class CSWinMapHandler(Handler):
             for index in range(sides):
                 x, y = cos(start_angle + index * angle), sin(start_angle + index * angle)
                 polygon_points.append(
-                    (center + radius * (x * i * percent) + (x * 20), center + radius * (y * i * percent) + (y * 20)))
+                    (center + radius * (x * i * percent) + (x * offset), center + radius * (y * i * percent) + (y * offset)))
 
             polygons.append(polygon_points)
 
@@ -71,5 +72,11 @@ class CSWinMapHandler(Handler):
         for i in range(sides):
             for polygon_points in polygons:
                 draw.line([polygon_points[i], polygon_points[(i + 1) % sides]], fill=(255, 255, 255, 255), width=1)
+
+        for line in lines:
+            draw.line(line, fill=(255, 255, 255, 255), width=1)
+
+        for map_image in images:
+            image.paste(map_image[0], map_image[1:], map_image[0])
 
         return get_image_response([image])
