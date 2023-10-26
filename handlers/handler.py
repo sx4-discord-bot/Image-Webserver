@@ -1,6 +1,6 @@
 from functools import wraps
 from io import BytesIO
-from typing import Any, Type, List, Tuple, Optional
+from typing import Any, Type, List, Tuple, Optional, Callable
 
 from PIL import Image, UnidentifiedImageError
 from flask import request
@@ -98,11 +98,11 @@ class Handler:
     def on_request(self, *args):
         pass
 
-    def query(self, query: str, type: Type[Any] = str, default: Any = None) -> Any:
-        return self.request.args.get(query, type=type, default=default)
+    def query(self, query: str, mapping: Callable[[str], Any] = str, default: Any = None) -> Any:
+        return self.request.args.get(query, type=mapping, default=default)
 
-    def header(self, header: str, type: Type[Any] = str, default: Any = None) -> Any:
-        return self.request.headers.get(header, type=type, default=default)
+    def header(self, header: str, mapping: Callable[[str], Any] = str, default: Any = None) -> Any:
+        return self.request.headers.get(header, type=mapping, default=default)
 
     def body(self, key: str, type: Optional[Type[Any]] = str, default: Any = None) -> Any:
         value = self.request.json.get(key)

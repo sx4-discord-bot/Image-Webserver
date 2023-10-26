@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List
 
 from PIL import Image
 
@@ -21,6 +21,8 @@ class ShipHandler(MultipleImageHandler):
         percent = self.query("percent", int)
         if percent > 100 or percent < 1:
             raise BadRequest("Percent cannot be larger than 100 or less than 1", ErrorCode.INVALID_QUERY_VALUE)
+
+        watermark = get_image_asset("watermark.png")
 
         heart, heart_outline = get_image_asset("heart.png"), get_image_asset("heart-outline.png")
         width, height = heart.size
@@ -51,6 +53,9 @@ class ShipHandler(MultipleImageHandler):
             background.paste(second_copy, (645, 5), second_copy)
             background.paste(heart, (305, pixels), heart)
             background.paste(heart_outline, (305, 0), heart_outline)
+
+            if self.authorization_type == "trial":
+                background.paste(watermark, (0, 0), watermark)
 
             frames.append(background)
 
