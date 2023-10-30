@@ -57,7 +57,7 @@ class LineGraphHandler(Handler):
         polygon = [(excess, height + excess)]
         for index, name in enumerate(points):
             value = points[name]
-            percent = 0.5 if len(points) == 1 else (max_value - value) / difference_graph
+            percent = 0.5 if difference_graph == 0 else (max_value - value) / difference_graph
 
             x, y = x_change * index + excess, percent * height + excess
             polygon.append((x, y))
