@@ -52,7 +52,7 @@ class LineGraphHandler(Handler):
         x_change = width if len(points) == 1 else width / (len(points) - 1)
 
         max_length = max(map(lambda n: draw.textsize(n)[0], points.keys()))
-        points_per_text = ceil(max_length / (width / len(points) * 0.9))
+        points_per_text = ceil(max_length / (width / len(points) * 0.8))
 
         polygon = [(excess, height + excess)]
         for index, name in enumerate(points):
