@@ -32,7 +32,7 @@ class LineGraphHandler(Handler):
 
         height, width = 600, 1000
         excess = 75
-        point_length = 10
+        default_point_length = 10
         graph_width, graph_height = width + excess, height + excess
         y_points = 8
 
@@ -65,11 +65,15 @@ class LineGraphHandler(Handler):
                 polygon.append((x_change + excess, percent * height + excess))
 
             extra = (x_change * percent if len(points) == 1 else 0)
-            draw.line((x + extra, graph_height, x + extra, graph_height + point_length), fill=(255, 255, 255, 255), width=1)
 
+            point_length = default_point_length
             if index % points_per_text == 0:
                 font_width, _ = draw.textsize(name)
                 draw.text((x + extra - font_width / 2 + 1, graph_height + 15), name)
+            else:
+                point_length /= 2
+
+            draw.line((x + extra, graph_height, x + extra, graph_height + point_length), fill=(255, 255, 255, 255), width=1)
 
         polygon.append((graph_width, graph_height))
         draw.polygon(polygon, fill=(255, 0, 0, 100), outline=(255, 0, 0, 255))
