@@ -14,21 +14,29 @@ class LineGraphHandler(Handler):
     def __init__(self, app):
         super().__init__(app)
 
+        self.methods = ["GET", "POST"]
         self.require_authorization = False
 
     def on_request(self):
         x_header, y_header = None, None
 
         points = {}
-        for query in self.request.args:
-            if query == "x_header":
-                x_header = self.query(query)
-                continue
-            elif query == "y_header":
-                y_header = self.query(query)
-                continue
+        if self.request.method == "GET":
+            for query in self.request.args:
+                if query == "x_header":
+                    x_header = self.query(query)
+                    continue
+                elif query == "y_header":
+                    y_header = self.query(query)
+                    continue
 
-            points[query] = self.query(query, int)
+                points[query] = self.query(query, int)
+        else:
+            for key in self.request.json:
+                points[key] = self.body(key, int)
+
+            x_header = self.query("x_header")
+            y_header = self.query("y_header")
 
         height, width = 600, 1000
         excess = 75
