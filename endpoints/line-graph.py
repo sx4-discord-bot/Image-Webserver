@@ -86,7 +86,7 @@ class LineGraphHandler(Handler):
         polygon.append((graph_width, graph_height))
         draw.polygon(polygon, fill=(255, 0, 0, 100), outline=(255, 0, 0, 255))
 
-        log_value = log10(abs(change))
+        log_value = 0 if change == 0 else log10(abs(change))
         digits = ceil(abs(log_value)) if log_value < 0 else 0
 
         for index in range(y_points):
