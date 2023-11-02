@@ -1,4 +1,4 @@
-from math import ceil
+from math import ceil, log10, floor
 from typing import Optional
 
 from PIL import Image, ImageDraw, ImageOps
@@ -78,11 +78,16 @@ class LineGraphHandler(Handler):
         polygon.append((graph_width, graph_height))
         draw.polygon(polygon, fill=(255, 0, 0, 100), outline=(255, 0, 0, 255))
 
+        log_value = log10(abs(change))
+        digits = ceil(abs(log_value)) if log_value < 0 else 0
+
         for index in range(y_points):
             y = (height / (y_points - 1) * index) + excess
             draw.line((excess - 10, y, graph_width, y), fill=(255, 255, 255, 255), width=1)
 
-            text = str(round(max_value - (index * change)))
+            value = max_value - (index * change)
+
+            text = f"{value:.{digits}f}"
             font_width, _ = draw.textsize(text)
 
             draw.text((excess - (excess / 5) - font_width, y - 5), text)
