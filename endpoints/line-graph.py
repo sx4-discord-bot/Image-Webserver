@@ -1,9 +1,11 @@
+from functools import reduce
 from math import ceil, log10, floor
-from typing import Optional
+from typing import Optional, List
 
 from PIL import Image, ImageDraw, ImageOps
 
 from handlers.handler import Handler
+from utility.colour import as_rgb_tuple
 from utility.error import ErrorCode
 from utility.image import get_image_response, get_font_asset
 from utility.response import BadRequest
@@ -30,13 +32,27 @@ class LineGraphHandler(Handler):
                     y_header = self.query(query)
                     continue
 
-                points[query] = self.query(query, int)
+                points[query] = [self.query(query, int)]
+
+            colours = [16711680]
         else:
             for key in self.request.json:
-                points[key] = self.body(key, int)
+                value = self.body(key, None)
+                if key == "colours":
+                    continue
+
+                if isinstance(value, list):
+                    points[key] = value
+                elif isinstance(value, int):
+                    points[key] = [value]
+                else:
+                    raise BadRequest("values need to be of type int or list", ErrorCode.INVALID_FIELD_VALUE)
 
             x_header = self.query("x_header")
             y_header = self.query("y_header")
+            colours = self.body("colours", list, [])
+
+        values = list(filter(lambda a: a, reduce(lambda a, b: a + b, points.values())))
 
         height, width = 600, 1000
         excess = 75
@@ -49,7 +65,7 @@ class LineGraphHandler(Handler):
         draw = ImageDraw.Draw(image)
         draw.rectangle((excess, excess, graph_width, graph_height), fill=(255, 255, 255, 0))
 
-        max_value, min_value = max(points.values()), min(points.values())
+        max_value, min_value = max(values), min(values)
         difference = abs(max_value - min_value)
 
         change = difference / (y_points - 3)
@@ -62,29 +78,46 @@ class LineGraphHandler(Handler):
         max_length = max(map(lambda n: draw.textsize(n)[0], points.keys()))
         points_per_text = ceil(max_length / (width / len(points) * 0.8))
 
-        polygon = [(excess, height + excess)]
-        for index, name in enumerate(points):
-            value = points[name]
-            percent = 0.5 if difference_graph == 0 else (max_value - value) / difference_graph
+        for i in range(max(map(lambda v: len(v), points.values()))):
+            polygon_image = Image.new("RGBA", image.size, 0)
+            polygon_draw = ImageDraw.Draw(polygon_image)
 
-            x, y = x_change * index + excess, percent * height + excess
-            polygon.append((x, y))
-            if len(points) == 1:
-                polygon.append((x_change + excess, percent * height + excess))
+            polygon = [(excess, height + excess)]
+            for index, name in enumerate(points):
+                x = x_change * index + excess
+                if i == 0:
+                    extra = (x_change * 0.5 if len(points) == 1 else 0)
 
-            extra = (x_change * percent if len(points) == 1 else 0)
+                    point_length = default_point_length
+                    if index % points_per_text == 0:
+                        font_width, _ = draw.textsize(name)
+                        draw.text((x + extra - font_width / 2 + 1, graph_height + 15), name)
+                    else:
+                        point_length /= 2
 
-            point_length = default_point_length
-            if index % points_per_text == 0:
-                font_width, _ = draw.textsize(name)
-                draw.text((x + extra - font_width / 2 + 1, graph_height + 15), name)
+                    draw.line((x + extra, graph_height, x + extra, graph_height + point_length), fill=(255, 255, 255, 255),
+                              width=1)
+
+                value = points[name][i]
+                if not value:
+                    polygon.append((polygon[-1][0], graph_height))
+                    break
+
+                percent = 0.5 if difference_graph == 0 else (max_value - value) / difference_graph
+
+                y = percent * height + excess
+                polygon.append((x, y))
+                if len(points) == 1:
+                    polygon.append((x_change + excess, percent * height + excess))
             else:
-                point_length /= 2
+                polygon.append((graph_width, graph_height))
 
-            draw.line((x + extra, graph_height, x + extra, graph_height + point_length), fill=(255, 255, 255, 255), width=1)
+            colour = as_rgb_tuple(colours[i]) if len(colours) > i else (255, 0, 0)
+            polygon_draw.polygon(polygon, fill=colour + (100,), outline=colour + (255,))
 
-        polygon.append((graph_width, graph_height))
-        draw.polygon(polygon, fill=(255, 0, 0, 100), outline=(255, 0, 0, 255))
+            image = Image.alpha_composite(image, polygon_image)
+
+        draw = ImageDraw.Draw(image)
 
         log_value = 0 if change == 0 else log10(abs(change))
         digits = ceil(abs(log_value)) if log_value < 0 else 0
@@ -113,7 +146,9 @@ class LineGraphHandler(Handler):
 
             font_image = font_image.rotate(270, expand=1)
 
-            image.paste(font_image, (int(width + excess * 2 - y_font_height), int(((height + excess * 2) - y_font_width) / 2)))
-            draw.text((((width + excess * 2) - x_font_width) / 2, excess - (excess / 7) - x_font_height), x_header, font=font)
+            image.paste(font_image,
+                        (int(width + excess * 2 - y_font_height), int(((height + excess * 2) - y_font_width) / 2)))
+            draw.text((((width + excess * 2) - x_font_width) / 2, excess - (excess / 7) - x_font_height), x_header,
+                      font=font)
 
         return get_image_response([image])
