@@ -101,7 +101,7 @@ class LineGraphHandler(Handler):
                         point_length /= 2
 
                     draw.line((x + extra, graph_height, x + extra, graph_height + point_length), fill=(255, 255, 255, 255),
-                              width=1)
+                              width=1 * multiplier)
 
                 value = points[name][i]
                 if not value:
