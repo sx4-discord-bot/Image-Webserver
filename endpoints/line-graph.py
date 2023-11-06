@@ -23,6 +23,7 @@ class LineGraphHandler(Handler):
         x_header, y_header = None, None
 
         points = {}
+        colours = []
         if self.request.method == "GET":
             for query in self.request.args:
                 if query == "x_header":
@@ -33,8 +34,6 @@ class LineGraphHandler(Handler):
                     continue
 
                 points[query] = [self.query(query, int)]
-
-            colours = [16711680]
         else:
             data = self.body("data", dict)
             for key in data:
@@ -81,7 +80,7 @@ class LineGraphHandler(Handler):
         max_length = max(map(lambda n: axis_font.getsize(n)[0], points.keys()))
         points_per_text = ceil(max_length / (width / len(points) * 0.8))
 
-        for i in range(max(map(lambda v: len(v), points.values()))):
+        for i in range(max(map(len, points.values()))):
             polygon_image = Image.new("RGBA", image.size, 0)
             polygon_draw = ImageDraw.Draw(polygon_image)
 
@@ -115,7 +114,9 @@ class LineGraphHandler(Handler):
             else:
                 polygon.append((graph_width, graph_height))
 
-            colour = as_rgb_tuple(colours[i]) if len(colours) > i else (255, 0, 0)
+            colour_data = colours[i] if len(colours) > i else {"colour": 16711680}
+
+            colour = as_rgb_tuple(colour_data["colour"])
             polygon_draw.polygon(polygon, fill=colour + (100,))
 
             line_points = polygon[1:-1]
@@ -125,6 +126,22 @@ class LineGraphHandler(Handler):
             image = Image.alpha_composite(image, polygon_image)
 
         draw = ImageDraw.Draw(image)
+
+        legend_width = excess
+        rectangle_size = 10 * multiplier
+
+        for colour_data in colours:
+            colour, name = as_rgb_tuple(colour_data["colour"]), colour_data["name"]
+            if name:
+                excess_center = graph_height + excess - (excess / 3)
+                draw.rectangle((legend_width, excess_center - (rectangle_size / 2), legend_width + rectangle_size,
+                                excess_center + (rectangle_size / 2)), fill=colour + (255,))
+
+                legend_width += rectangle_size + 5 * multiplier
+
+                draw.text((legend_width, excess_center - rectangle_size / 1.4), name, font=axis_font)
+
+                legend_width += axis_font.getsize(name)[0] + 15 * multiplier
 
         log_value = 0 if change == 0 else log10(abs(change))
         digits = ceil(abs(log_value)) if log_value < 0 else 0
