@@ -36,11 +36,9 @@ class LineGraphHandler(Handler):
 
             colours = [16711680]
         else:
-            for key in self.request.json:
-                value = self.body(key, None)
-                if key == "colours":
-                    continue
-
+            data = self.body("data", dict)
+            for key in data:
+                value = data[key]
                 if isinstance(value, list):
                     points[key] = value
                 elif isinstance(value, int):
