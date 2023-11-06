@@ -29,7 +29,10 @@ class CSWinMapHandler(Handler):
         start_angle = -math.pi / 2
         angle = 2 * math.pi / sides
 
-        width, height = 1024, 1024
+        multiplier = 5
+        actual_width, actual_height = 1024, 1024
+        width, height = actual_width * multiplier, actual_height * multiplier
+
         center = width / 2
         radius = width / 3
         offset = 20
@@ -67,16 +70,21 @@ class CSWinMapHandler(Handler):
             polygons.append(polygon_points)
 
         draw.polygon(polygons[-1], fill=(255, 255, 255, 0))
-        draw.polygon(points, fill=(255, 0, 0, 100), outline=(255, 0, 0, 255))
+        draw.polygon(points, fill=(255, 0, 0, 100))
+
+        for p in range(len(points)):
+            draw.line((points[p], points[(p + 1) % len(points)]), fill=(255, 0, 0, 255), width=1 * multiplier)
 
         for i in range(sides):
             for polygon_points in polygons:
-                draw.line([polygon_points[i], polygon_points[(i + 1) % sides]], fill=(255, 255, 255, 255), width=1)
+                draw.line([polygon_points[i], polygon_points[(i + 1) % sides]], fill=(255, 255, 255, 255), width=1 * multiplier)
 
         for line in lines:
-            draw.line(line, fill=(255, 255, 255, 255), width=1)
+            draw.line(line, fill=(255, 255, 255, 255), width=1 * multiplier)
 
         for map_image in images:
             image.paste(map_image[0], map_image[1:], map_image[0])
+
+        image = image.resize((actual_width, actual_height), Image.LANCZOS)
 
         return get_image_response([image])
