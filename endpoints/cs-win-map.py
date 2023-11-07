@@ -35,7 +35,7 @@ class CSWinMapHandler(Handler):
 
         center = width / 2
         radius = width / 3
-        offset = 20
+        offset = 20 * multiplier
 
         map_size = int(width / 10), int(height / 10)
 
@@ -46,6 +46,7 @@ class CSWinMapHandler(Handler):
         for index, name in enumerate(maps):
             percent = maps[name] / max_wins
             cos_x, sin_y = cos(start_angle + index * angle), sin(start_angle + index * angle)
+
             x, y = center + radius * (cos_x * percent) + (cos_x * offset), center + radius * (sin_y * percent) + (sin_y * offset)
             points.append((x, y))
 
