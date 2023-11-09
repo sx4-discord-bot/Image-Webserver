@@ -20,17 +20,13 @@ class LineGraphHandler(Handler):
         self.require_authorization = False
 
     def on_request(self):
-        x_header, y_header = None, None
+        x_header = self.query("x_header")
+        y_header = self.query("y_header")
 
-        points = {}
-        colours = []
+        points, colours, key_points = {}, [], []
         if self.request.method == "GET":
             for query in self.request.args:
-                if query == "x_header":
-                    x_header = self.query(query)
-                    continue
-                elif query == "y_header":
-                    y_header = self.query(query)
+                if query == "x_header" or query == "y_header":
                     continue
 
                 points[query] = [self.query(query, int)]
@@ -45,9 +41,8 @@ class LineGraphHandler(Handler):
                 else:
                     raise BadRequest("values need to be of type int or list", ErrorCode.INVALID_FIELD_VALUE)
 
-            x_header = self.query("x_header")
-            y_header = self.query("y_header")
             colours = self.body("colours", list, [])
+            key_points = self.body("key_points", list, [])
 
         values = list(filter(lambda a: a, reduce(lambda a, b: a + b, points.values())))
 
@@ -131,11 +126,15 @@ class LineGraphHandler(Handler):
         rectangle_size = 10 * multiplier
 
         for colour_data in colours:
-            colour, name = as_rgb_tuple(colour_data["colour"]), colour_data["name"]
+            colour = colour_data["colour"]
+            if colour is None:
+                continue
+
+            name = colour_data["name"]
             if name:
                 excess_center = graph_height + excess - (excess / 3)
                 draw.rectangle((legend_width, excess_center - (rectangle_size / 2), legend_width + rectangle_size,
-                                excess_center + (rectangle_size / 2)), fill=colour + (255,))
+                                excess_center + (rectangle_size / 2)), fill=as_rgb_tuple(colour) + (255,))
 
                 legend_width += rectangle_size + 5 * multiplier
 
@@ -156,6 +155,21 @@ class LineGraphHandler(Handler):
             font_width, font_height = axis_font.getsize(text)
 
             draw.text((excess - (excess / 5) - font_width, y - font_height / 1.8), text, font=axis_font)
+
+        for key_point in key_points:
+            value = key_point["value"]
+            if value is None:
+                continue
+
+            if value <= min_value or value >= max_value:
+                continue
+
+            percent = (max_value - value) / difference_graph
+            y = percent * height + excess
+
+            colour = key_point["colour"]
+
+            draw.line((excess, y, graph_width, y), fill=(as_rgb_tuple(colour) if colour is not None else (255, 0, 0)) + (255,), width=2 * multiplier)
 
         draw.rectangle((excess, excess, graph_width, graph_height), outline=(255, 255, 255, 255))
 
