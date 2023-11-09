@@ -105,13 +105,13 @@ class LineGraphHandler(Handler):
                 y = percent * height + excess
                 polygon.append((x, y))
                 if len(points) == 1:
-                    polygon.append((x_change + excess, percent * height + excess))
+                    polygon.append((x_change + excess, y))
             else:
                 polygon.append((graph_width, graph_height))
 
             colour_data = colours[i] if len(colours) > i else {"colour": 16711680}
 
-            colour = as_rgb_tuple(colour_data["colour"])
+            colour = as_rgb_tuple(colour_data.get("colour"))
             polygon_draw.polygon(polygon, fill=colour + (100,))
 
             line_points = polygon[1:-1]
@@ -126,11 +126,11 @@ class LineGraphHandler(Handler):
         rectangle_size = 10 * multiplier
 
         for colour_data in colours:
-            colour = colour_data["colour"]
+            colour = colour_data.get("colour")
             if colour is None:
                 continue
 
-            name = colour_data["name"]
+            name = colour_data.get("name")
             if name:
                 excess_center = graph_height + excess - (excess / 3)
                 draw.rectangle((legend_width, excess_center - (rectangle_size / 2), legend_width + rectangle_size,
@@ -157,7 +157,7 @@ class LineGraphHandler(Handler):
             draw.text((excess - (excess / 5) - font_width, y - font_height / 1.8), text, font=axis_font)
 
         for key_point in key_points:
-            value = key_point["value"]
+            value = key_point.get("value")
             if value is None:
                 continue
 
@@ -167,7 +167,7 @@ class LineGraphHandler(Handler):
             percent = (max_value - value) / difference_graph
             y = percent * height + excess
 
-            colour = key_point["colour"]
+            colour = key_point.get("colour")
 
             draw.line((excess, y, graph_width, y), fill=(as_rgb_tuple(colour) if colour is not None else (255, 0, 0)) + (255,), width=2 * multiplier)
 
