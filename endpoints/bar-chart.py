@@ -45,7 +45,7 @@ class BarGraphHandler(Handler):
         if sort and (sort == "asc" or sort == "desc"):
             bars = sorted(bars, key=lambda bar: bar.get("value"), reverse=sort == "desc")
 
-        multiplier = 3
+        multiplier = 2
         actual_height, actual_width = 600, 1000
         height, width = actual_height * multiplier, actual_width * multiplier
 
@@ -97,12 +97,12 @@ class BarGraphHandler(Handler):
 
             if name:
                 font_width, font_height = bar_font.getsize(name)
-                draw.text((x + x_change / 2 - font_width / 2, graph_height + (excess * 0.1)), name, font=bar_font)
+                draw.text((x + x_change / 2 - font_width / 2, graph_height + (excess * 0.07)), name, font=bar_font)
 
             if icon_url:
                 icon_size = min(excess * 0.75 - image_font_height, x_change * 0.25)
                 icon = resize_to_ratio(get_image(icon_url, f"bars.{index}.icon", "field"), (icon_size, icon_size)).convert("RGBA")
-                image.paste(icon, (int(x + x_change / 2 - icon.size[0] / 2), int(graph_height + (excess * 0.1 + (image_font_height if name else 0) * 1.4))), icon)
+                image.paste(icon, (int(x + x_change / 2 - icon.size[0] / 2), int(graph_height + (excess * 0.07 + (image_font_height if name else 0) * 1.4))), icon)
 
             colour = as_rgb_tuple(colour) if colour is not None else (255, 0, 0)
 
