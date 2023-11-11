@@ -6,7 +6,8 @@ from PIL import Image, ImageDraw
 from handlers.handler import Handler
 from utility.colour import as_rgb_tuple
 from utility.error import ErrorCode
-from utility.image import get_font_asset, get_image_response, get_image, resize_to_ratio, get_font_optimal
+from utility.image import get_font_asset, get_image_response, get_image, resize_to_ratio, get_font_optimal, \
+    get_image_asset
 from utility.response import BadRequest
 
 
@@ -101,7 +102,14 @@ class BarGraphHandler(Handler):
 
             if icon_url:
                 icon_size = min(excess * 0.75 - image_font_height, x_change * 0.25)
-                icon = resize_to_ratio(get_image(icon_url, f"bars.{index}.icon", "field"), (icon_size, icon_size)).convert("RGBA")
+
+                try:
+                    icon = get_image_asset(icon_url)
+                except:
+                    icon = get_image(icon_url, f"bars.{index}.icon", "field")
+
+                icon = resize_to_ratio(icon, (icon_size, icon_size)).convert("RGBA")
+
                 image.paste(icon, (int(x + x_change / 2 - icon.size[0] / 2), int(graph_height + (excess * 0.07 + (image_font_height if name else 0) * 1.4))), icon)
 
             colour = as_rgb_tuple(colour) if colour is not None else (255, 0, 0)
