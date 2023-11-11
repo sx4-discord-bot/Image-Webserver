@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw
 from handlers.handler import Handler
 from utility.colour import as_rgb_tuple
 from utility.error import ErrorCode
-from utility.image import get_font_asset, get_image_response, get_image, resize_to_ratio
+from utility.image import get_font_asset, get_image_response, get_image, resize_to_ratio, get_font_optimal
 from utility.response import BadRequest
 
 
@@ -53,7 +53,6 @@ class BarGraphHandler(Handler):
         point_length = int(excess / 7.5)
         graph_width, graph_height = width + excess, height + excess
         y_points = 8
-        icon_size = 32 * multiplier
         bar_offset = 25 * multiplier
 
         image = Image.new("RGBA", (width + excess * 2, height + excess * 2), (128, 128, 128, 30))
@@ -80,6 +79,10 @@ class BarGraphHandler(Handler):
 
         x_change = width - bar_offset * 2 if len(bars) == 1 else (width - (bar_offset * (len(bars) + 1))) / len(bars)
 
+        font_sizes = map(lambda bar: (get_font_optimal("roboto/RobotoMono-Regular.ttf", 20 * multiplier, bar.get("name"), x_change * 0.4), bar.get("name")), filter(lambda bar: bar.get("name"), bars))
+        bar_font = min(list(font_sizes), key=lambda f: f[0].getsize(f[1])[0])[0]
+        image_font_height = bar_font.getsize("a")[1]
+
         for index, data in enumerate(bars):
             value = data.get("value")
             if value is None:
@@ -92,15 +95,14 @@ class BarGraphHandler(Handler):
             percent = 0.5 if difference_graph == 0 else max(0, min(1, (max_value - value) / difference_graph))
             x, y = bar_offset * (index + 1) + x_change * index + excess, percent * height + excess
 
-            extra = (x_change * 0.5 if len(bars) == 1 else 0)
-
             if name:
-                font_width, _ = axis_font.getsize(name)
-                draw.text((x + extra + x_change / 2 - font_width / 2, graph_height + (excess * 0.1)), name, font=axis_font)
+                font_width, font_height = bar_font.getsize(name)
+                draw.text((x + x_change / 2 - font_width / 2, graph_height + (excess * 0.1)), name, font=bar_font)
 
             if icon_url:
+                icon_size = min(excess * 0.75 - image_font_height, x_change * 0.25)
                 icon = resize_to_ratio(get_image(icon_url, f"bars.{index}.icon", "field"), (icon_size, icon_size)).convert("RGBA")
-                image.paste(icon, (int(x + extra + x_change / 2 - icon.size[0] / 2), int(graph_height + (excess * (0.35 if name else 0.1)))), icon)
+                image.paste(icon, (int(x + x_change / 2 - icon.size[0] / 2), int(graph_height + (excess * 0.1 + image_font_height * 1.4))), icon)
 
             colour = as_rgb_tuple(colour) if colour is not None else (255, 0, 0)
 

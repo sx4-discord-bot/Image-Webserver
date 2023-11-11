@@ -121,7 +121,7 @@ def draw_ellipse(image, bounds, width=1, outline="white", antialias=4):
     image.paste(outline, mask=mask)
 
 
-def get_font_optimal(path: str, start: int, text: str, max_width: int) -> ImageFont:
+def get_font_optimal(path: str, start: int, text: str, max_width: float) -> ImageFont:
     font = get_font_asset(path, start)
     while font.getsize(text)[0] > max_width:
         start -= 1
