@@ -82,7 +82,7 @@ def get_text_newlined(text: str, font: ImageFont, max_width: int, max_lines: int
 
 def get_worker_url(url: str) -> str:
     uri = urlparse(url)
-    if uri.netloc.endswith("discordapp.com") or uri.netloc.endswith("discordapp.net"):
+    if uri.netloc.endswith("discordapp.com") or uri.netloc.endswith("discordapp.net") or uri.netloc.endswith("sx4.dev"):
         return url
 
     return "https://" + config.get("worker") + "?" + urlencode({"url": url})
