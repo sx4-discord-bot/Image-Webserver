@@ -102,7 +102,7 @@ class BarGraphHandler(Handler):
             if icon_url:
                 icon_size = min(excess * 0.75 - image_font_height, x_change * 0.25)
                 icon = resize_to_ratio(get_image(icon_url, f"bars.{index}.icon", "field"), (icon_size, icon_size)).convert("RGBA")
-                image.paste(icon, (int(x + x_change / 2 - icon.size[0] / 2), int(graph_height + (excess * 0.1 + image_font_height * 1.4))), icon)
+                image.paste(icon, (int(x + x_change / 2 - icon.size[0] / 2), int(graph_height + (excess * 0.1 + (image_font_height if name else 0) * 1.4))), icon)
 
             colour = as_rgb_tuple(colour) if colour is not None else (255, 0, 0)
 
