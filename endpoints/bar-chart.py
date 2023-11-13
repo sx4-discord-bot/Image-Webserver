@@ -80,7 +80,7 @@ class BarGraphHandler(Handler):
 
         x_change = width - bar_offset * 2 if len(bars) == 1 else (width - (bar_offset * (len(bars) + 1))) / len(bars)
 
-        font_sizes = map(lambda bar: (get_font_optimal("roboto/RobotoMono-Regular.ttf", 20 * multiplier, bar.get("name"), x_change * 0.4), bar.get("name")), filter(lambda bar: bar.get("name"), bars))
+        font_sizes = map(lambda bar: (get_font_optimal("roboto/RobotoMono-Regular.ttf", 20 * multiplier, bar.get("name"), x_change * 0.9), bar.get("name")), filter(lambda bar: bar.get("name"), bars))
         bar_font = min(list(font_sizes), key=lambda f: f[0].getsize(f[1])[0])[0]
         image_font_height = bar_font.getsize("a")[1]
 
