@@ -1,4 +1,4 @@
-from math import ceil, log10
+from math import ceil, log10, floor
 from typing import Optional, List, Dict
 
 from PIL import Image, ImageDraw
@@ -68,19 +68,28 @@ class BarGraphHandler(Handler):
         if variable:
             values = list(map(lambda bar: bar["value"], bars))
             max_value, min_value = max(values), min(values)
+            difference = abs(max_value - min_value)
+            if difference == 0:
+                change = 1
+                min_value -= change
+                max_value += change
+            else:
+                change = difference / 7
+                power = 10 ** ceil(log10(change) - 1)
+                change = ceil(change / power + 1) * power
 
-        difference = abs(max_value - min_value)
-        change = difference / (y_points - (3 if variable else 1))
-
-        if variable:
-            max_value += change
-            min_value -= change
+                min_value = change * floor(min_value / change)
+                max_value = change * ceil((max_value + 1) / change)
+        else:
+            difference = abs(max_value - min_value)
+            change = difference / y_points - 1
 
         difference_graph = abs(max_value - min_value)
+        y_points = round(difference_graph / change) + 1
 
         x_change = width - bar_offset * 2 if len(bars) == 1 else (width - (bar_offset * (len(bars) + 1))) / len(bars)
 
-        font_sizes = map(lambda bar: (get_font_optimal("roboto/RobotoMono-Regular.ttf", 20 * multiplier, bar.get("name"), x_change * 0.9), bar.get("name")), filter(lambda bar: bar.get("name"), bars))
+        font_sizes = map(lambda bar: (get_font_optimal("roboto/RobotoMono-Bold.ttf", 20 * multiplier, bar.get("name"), x_change * 0.9), bar.get("name")), filter(lambda bar: bar.get("name"), bars))
         bar_font = min(list(font_sizes), key=lambda f: f[0].getsize(f[1])[0])[0]
         image_font_height = bar_font.getsize("a")[1]
 

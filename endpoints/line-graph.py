@@ -53,7 +53,6 @@ class LineGraphHandler(Handler):
         excess = int(height * 0.125)
         default_point_length = int(excess / 7.5)
         graph_width, graph_height = width + excess, height + excess
-        y_points = 8
 
         image = Image.new("RGBA", (width + excess * 2, height + excess * 2), (128, 128, 128, 30))
 
@@ -64,11 +63,20 @@ class LineGraphHandler(Handler):
 
         max_value, min_value = max(values), min(values)
         difference = abs(max_value - min_value)
+        if difference == 0:
+            change = 1
+            min_value -= change
+            max_value += change
+        else:
+            change = difference / 7
+            power = 10 ** ceil(log10(change) - 1)
+            change = ceil(change / power + 1) * power
 
-        change = difference / (y_points - 3)
-        max_value += change
-        min_value -= change
+            min_value = change * floor(min_value / change)
+            max_value = change * ceil((max_value + 1) / change)
+
         difference_graph = abs(max_value - min_value)
+        y_points = round(difference_graph / change) + 1
 
         x_change = width if len(points) == 1 else width / (len(points) - 1)
 
