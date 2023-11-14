@@ -80,12 +80,13 @@ class BarGraphHandler(Handler):
 
                 min_value = change * floor(min_value / change)
                 max_value = change * ceil((max_value + 1) / change)
+
+            difference_graph = abs(max_value - min_value)
+            y_points = round(difference_graph / change) + 1
         else:
             difference = abs(max_value - min_value)
-            change = difference / y_points - 1
-
-        difference_graph = abs(max_value - min_value)
-        y_points = round(difference_graph / change) + 1
+            change = difference / (y_points - 1)
+            difference_graph = difference
 
         x_change = width - bar_offset * 2 if len(bars) == 1 else (width - (bar_offset * (len(bars) + 1))) / len(bars)
 
