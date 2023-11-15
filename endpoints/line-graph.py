@@ -64,7 +64,7 @@ class LineGraphHandler(Handler):
         max_value, min_value = max(values), min(values)
         difference = abs(max_value - min_value)
         if difference == 0:
-            change = 1
+            change = 10 ** ceil(log10(max_value) - 1)
             min_value -= change
             max_value += change
         else:
