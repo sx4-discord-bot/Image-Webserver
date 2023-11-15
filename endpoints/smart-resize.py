@@ -18,6 +18,6 @@ class SmartResize(SingleImageHandler):
             raise BadRequest("width or height is a negative number", ErrorCode.INVALID_QUERY_VALUE)
 
         if size[0] > 5000 or size[1] > 5000:
-            raise BadRequest("Neither width or height can be more than 5000 pixels in size",ErrorCode.INVALID_QUERY_VALUE)
+            raise BadRequest("Neither width or height can be more than 5000 pixels in size", ErrorCode.INVALID_QUERY_VALUE)
 
         return get_image_response(for_each_frame(image, lambda frame: resize_to_ratio(frame, size)))
