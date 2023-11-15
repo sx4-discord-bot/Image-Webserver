@@ -20,9 +20,6 @@ class LineGraphHandler(Handler):
         self.require_authorization = False
 
     def on_request(self):
-        x_header = self.query("x_header") or self.body("x_header")
-        y_header = self.query("y_header") or self.body("y_header")
-
         points = {}
         data = self.body("data", dict)
         for key in data:
@@ -32,12 +29,19 @@ class LineGraphHandler(Handler):
             elif isinstance(value, int):
                 points[key] = [value]
             else:
-                raise BadRequest(f"data.{key} need to be of type int or list", ErrorCode.INVALID_FIELD_VALUE)
+                raise BadRequest(f"data.{key} needs to be of type int or list", ErrorCode.INVALID_FIELD_VALUE)
 
+        x_header = self.query("x_header") or self.body("x_header")
+        y_header = self.query("y_header") or self.body("y_header")
         colours = self.body("colours", list, [])
         key_points = self.body("key_points", list, [])
-
-        values = list(filter(lambda a: a, reduce(lambda a, b: a + b, points.values())))
+        max_value = self.body("max_value", int)
+        min_value = self.body("min_value", int)
+        value_prefix = self.body("value_prefix", str, "")
+        value_suffix = self.body("value_suffix", str, "")
+        y_points = self.body("steps", int, 7) + 1
+        if y_points < 2:
+            raise BadRequest(f"steps needs to be a value more than 0", ErrorCode.INVALID_FIELD_VALUE)
 
         multiplier = 3
         actual_height, actual_width = 600, 1000
@@ -54,22 +58,29 @@ class LineGraphHandler(Handler):
 
         axis_font = get_font_asset("roboto/RobotoMono-Bold.ttf", 10 * multiplier)
 
-        max_value, min_value = max(values), min(values)
-        difference = abs(max_value - min_value)
-        if difference == 0:
-            change = 1 if max_value == 0 else 10 ** ceil(log10(max_value) - 1)
-            min_value -= change
-            max_value += change
+        variable = min_value is None or max_value is None
+        if variable:
+            values = list(filter(lambda a: a, reduce(lambda a, b: a + b, points.values())))
+            max_value, min_value = max(values), min(values)
+            difference = abs(max_value - min_value)
+            if difference == 0:
+                change = 1 if max_value == 0 else 10 ** ceil(log10(max_value) - 1)
+                min_value -= change
+                max_value += change
+            else:
+                change = difference / 7
+                power = 10 ** ceil(log10(change) - 1)
+                change = ceil(change / power + 1) * power
+
+                min_value = change * floor(min_value / change)
+                max_value = change * ceil((max_value + 1) / change)
+
+            difference_graph = abs(max_value - min_value)
+            y_points = round(difference_graph / change) + 1
         else:
-            change = difference / 7
-            power = 10 ** ceil(log10(change) - 1)
-            change = ceil(change / power + 1) * power
-
-            min_value = change * floor(min_value / change)
-            max_value = change * ceil((max_value + 1) / change)
-
-        difference_graph = abs(max_value - min_value)
-        y_points = round(difference_graph / change) + 1
+            difference = abs(max_value - min_value)
+            change = difference / (y_points - 1)
+            difference_graph = difference
 
         x_change = width if len(points) == 1 else width / (len(points) - 1)
 
@@ -152,7 +163,7 @@ class LineGraphHandler(Handler):
 
             value = max_value - (index * change)
 
-            text = f"{value:.{digits}f}"
+            text = f"{value_prefix}{value:.{digits}f}{value_suffix}"
             font_width, font_height = axis_font.getsize(text)
 
             draw.text((excess - (excess / 5) - font_width, y - font_height / 1.8), text, font=axis_font)
