@@ -32,7 +32,7 @@ class LineGraphHandler(Handler):
             elif isinstance(value, int):
                 points[key] = [value]
             else:
-                raise BadRequest("values need to be of type int or list", ErrorCode.INVALID_FIELD_VALUE)
+                raise BadRequest(f"data.{key} need to be of type int or list", ErrorCode.INVALID_FIELD_VALUE)
 
         colours = self.body("colours", list, [])
         key_points = self.body("key_points", list, [])
