@@ -15,5 +15,11 @@ class MedianColourHandler(SingleImageHandler):
         self.aliases = ["median-color"]
 
     def on_request(self, image):
-        stat = ImageStat.Stat(image.convert("RGB"))
+        mask = None
+        try:
+            mask = image.getchannel("A")
+        except ValueError:
+            pass
+
+        stat = ImageStat.Stat(image, mask=mask)
         return Response(status=200, response=json.dumps({"status": 200, "colour": as_rgb(tuple(int(x) for x in stat.median))}), content_type="application/json")
