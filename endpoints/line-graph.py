@@ -16,33 +16,26 @@ class LineGraphHandler(Handler):
     def __init__(self, app):
         super().__init__(app)
 
-        self.methods = ["GET", "POST"]
+        self.methods = ["POST"]
         self.require_authorization = False
 
     def on_request(self):
-        x_header = self.query("x_header")
-        y_header = self.query("y_header")
+        x_header = self.query("x_header") or self.body("x_header")
+        y_header = self.query("y_header") or self.body("y_header")
 
-        points, colours, key_points = {}, [], []
-        if self.request.method == "GET":
-            for query in self.request.args:
-                if query == "x_header" or query == "y_header":
-                    continue
+        points = {}
+        data = self.body("data", dict)
+        for key in data:
+            value = data[key]
+            if isinstance(value, list):
+                points[key] = value
+            elif isinstance(value, int):
+                points[key] = [value]
+            else:
+                raise BadRequest("values need to be of type int or list", ErrorCode.INVALID_FIELD_VALUE)
 
-                points[query] = [self.query(query, int)]
-        else:
-            data = self.body("data", dict)
-            for key in data:
-                value = data[key]
-                if isinstance(value, list):
-                    points[key] = value
-                elif isinstance(value, int):
-                    points[key] = [value]
-                else:
-                    raise BadRequest("values need to be of type int or list", ErrorCode.INVALID_FIELD_VALUE)
-
-            colours = self.body("colours", list, [])
-            key_points = self.body("key_points", list, [])
+        colours = self.body("colours", list, [])
+        key_points = self.body("key_points", list, [])
 
         values = list(filter(lambda a: a, reduce(lambda a, b: a + b, points.values())))
 
