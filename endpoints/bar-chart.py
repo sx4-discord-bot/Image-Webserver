@@ -38,6 +38,9 @@ class BarGraphHandler(Handler):
         sort = self.body("sort")
         x_header = self.body("x_header")
         y_header = self.body("y_header")
+        y_points = self.body("steps", int, 7) + 1
+        if y_points < 2:
+            raise BadRequest(f"steps needs to be a value more than 0", ErrorCode.INVALID_FIELD_VALUE)
 
         bars = self.body("bars", list, [])
         if len(bars) == 0:
@@ -53,7 +56,6 @@ class BarGraphHandler(Handler):
         excess = int(height * 0.125)
         point_length = int(excess / 7.5)
         graph_width, graph_height = width + excess, height + excess
-        y_points = 8
         bar_offset = 25 * multiplier
 
         image = Image.new("RGBA", (width + excess * 2, height + excess * 2), (128, 128, 128, 30))
