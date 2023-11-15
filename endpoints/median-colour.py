@@ -21,5 +21,5 @@ class MedianColourHandler(SingleImageHandler):
         except ValueError:
             pass
 
-        stat = ImageStat.Stat(image, mask=mask)
+        stat = ImageStat.Stat(image.convert("RGB"), mask=mask)
         return Response(status=200, response=json.dumps({"status": 200, "colour": as_rgb(tuple(int(x) for x in stat.median))}), content_type="application/json")
