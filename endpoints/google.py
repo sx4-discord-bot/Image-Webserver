@@ -32,7 +32,7 @@ class GoogleHandler(Handler):
                 draw.text((378 + font.getsize(text)[0], 319), "|", 0, font)
             else:
                 remaining = (i - length) % 6
-                if remaining == 3 or remaining == 4 or remaining == 5:
+                if remaining > 2:
                     draw.text((378 + font.getsize(text)[0], 319), "|", 0, font)
 
             frames.append(copy)
