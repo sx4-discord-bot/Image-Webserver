@@ -42,7 +42,7 @@ class BarGraphHandler(Handler):
         if y_points < 2:
             raise BadRequest(f"steps needs to be a value more than 0", ErrorCode.INVALID_FIELD_VALUE)
 
-        bars = self.body("bars", list, [])
+        bars = self.body("bars", list)
         if len(bars) == 0:
             raise BadRequest("bars field was empty", ErrorCode.INVALID_FIELD_VALUE)
 
