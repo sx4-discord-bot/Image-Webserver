@@ -58,7 +58,7 @@ class RadarChartHandler(Handler):
 
         image = Image.new("RGBA", (width, height), (128, 128, 128, 30))
         draw = ImageDraw.Draw(image)
-        axis_font = get_font_asset("roboto/RobotoMono-Bold.ttf", 10 * multiplier)
+        font = get_font_asset("roboto/RobotoMono-Bold.ttf", 15 * multiplier)
 
         percent = 1 / max_value
 
@@ -80,20 +80,20 @@ class RadarChartHandler(Handler):
                 draw.line([polygon_points[i], polygon_points[(i + 1) % sides]], fill=(255, 255, 255, 255),
                           width=1 * multiplier)
 
-        legend_width = 10 * multiplier
-        rectangle_size = 10 * multiplier
+        legend_width = 15 * multiplier
+        rectangle_size = 15 * multiplier
         for colour_data in colours:
             colour = as_rgb_tuple(colour_data.get("colour")) if "colour" in colour_data else (255, 0, 0)
 
             name = colour_data.get("name")
             if name:
-                draw.rectangle((legend_width, rectangle_size * 2, legend_width + rectangle_size, rectangle_size), fill=colour + (255,))
+                draw.rectangle((legend_width, height - rectangle_size * 2, legend_width + rectangle_size, height - rectangle_size), fill=colour + (255,))
 
                 legend_width += rectangle_size + 5 * multiplier
 
-                draw.text((legend_width, rectangle_size / 1.3), name, font=axis_font)
+                draw.text((legend_width, height - rectangle_size * 2.2), name, font=font)
 
-                legend_width += axis_font.getsize(name)[0] + 15 * multiplier
+                legend_width += font.getsize(name)[0] + rectangle_size * 1.2
 
         for i in range(max_length):
             polygon_image = Image.new("RGBA", image.size, 0)
@@ -114,23 +114,26 @@ class RadarChartHandler(Handler):
                     continue
 
                 icon_url = point.get("icon")
-                extra = 1 if icon_url is None else 4
+                text = point.get("text")
+                extra = 4 if icon_url is not None else 2 if text is not None else 1
 
                 line = (center + radius * cos_x + (cos_x * offset * extra), center + radius * sin_y + (sin_y * offset * extra), center + (cos_x * offset), center + (sin_y * offset))
                 draw.line(line, fill=(255, 255, 255, 255), width=1 * multiplier)
 
-                if icon_url is None:
-                    continue
+                if icon_url is not None:
+                    try:
+                        icon = get_image_asset(icon_url)
+                    except:
+                        icon = get_image(icon_url, f"data.{index}.icon", "field")
 
-                try:
-                    icon = get_image_asset(icon_url)
-                except:
-                    icon = get_image(icon_url, f"data.{index}.icon", "field")
+                    icon = icon.resize(icon_size)
 
-                icon = icon.resize(icon_size)
+                    image.paste(icon, (int(center + radius * cos_x - (icon_size[0] / 2) + (cos_x * icon_size[0])),
+                                       int(center + radius * sin_y - (icon_size[1] / 2) + (sin_y * icon_size[1]))), icon)
+                elif text is not None:
+                    text_size = font.getsize(text)
 
-                image.paste(icon, (int(center + radius * cos_x - (icon_size[0] / 2) + (cos_x * icon_size[0])),
-                                   int(center + radius * sin_y - (icon_size[1] / 2) + (sin_y * icon_size[1]))), icon)
+                    draw.text((center + radius * cos_x + (cos_x * offset * 2.2) - (text_size[0] / 2) + (cos_x * text_size[0] * 0.7), center + radius * sin_y + (sin_y * offset * 2.2) - (text_size[1] / 2) + (sin_y * text_size[1] * 0.7)), text, font=font)
 
             colour_data = colours[i] if len(colours) > i else {}
             colour = as_rgb_tuple(colour_data.get("colour")) if "colour" in colour_data else (255, 0, 0)
