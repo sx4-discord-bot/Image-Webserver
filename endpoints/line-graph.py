@@ -121,9 +121,9 @@ class LineGraphHandler(Handler):
             else:
                 polygon.append((graph_width, graph_height))
 
-            colour_data = colours[i] if len(colours) > i else {"colour": 16711680}
+            colour_data = colours[i] if len(colours) > i else {}
+            colour = as_rgb_tuple(colour_data.get("colour")) if "colour" in colour_data else (255, 0, 0)
 
-            colour = as_rgb_tuple(colour_data.get("colour"))
             polygon_draw.polygon(polygon, fill=colour + (100,))
 
             line_points = polygon[1:-1]
