@@ -27,7 +27,9 @@ class RadarChartHandler(Handler):
 
     def on_request(self):
         data = self.body("data", list)
-        if len(data) < 5:
+
+        sides = len(data)
+        if sides < 5:
             raise BadRequest("data field cannot have less than 5 values", ErrorCode.INVALID_FIELD_VALUE)
 
         max_value, max_length = 1, 0
@@ -41,7 +43,6 @@ class RadarChartHandler(Handler):
 
         colours = self.body("colours", list, [])
 
-        sides = len(data)
         start_angle = -math.pi / 2
         angle = 2 * math.pi / sides
 
