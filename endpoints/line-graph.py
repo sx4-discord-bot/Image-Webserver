@@ -179,7 +179,7 @@ class LineGraphHandler(Handler):
         rectangle_size = 10 * multiplier
 
         for i in range(max_length):
-            if len(legends) < i:
+            if len(legends) <= i:
                 continue
 
             name = legends[i]
