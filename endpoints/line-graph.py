@@ -167,7 +167,7 @@ class LineGraphHandler(Handler):
                 values = point.get("value")
                 value = values[i]
                 if value is None:
-                    polygon.append((polygon[-1][0], graph_height))
+                    polygon.append((x - x_change, graph_height))
                     break
 
                 percent = 0.5 if difference_graph == 0 else max(0, min(1, (max_value - value) / difference_graph))
