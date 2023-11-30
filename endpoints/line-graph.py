@@ -19,7 +19,7 @@ class LineGraphHandler(Handler):
 
         self.methods = ["POST"]
         self.fields += [
-            (["data"], list),
+            (["data"], List[Dict[str, object]]),
             (["x_header"], Optional[str]),
             (["y_header"], Optional[str]),
             (["colours"], Optional[List[int]]),
