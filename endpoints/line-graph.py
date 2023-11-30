@@ -1,7 +1,7 @@
 import numbers
 from functools import reduce
 from math import ceil, log10, floor
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 
@@ -18,6 +18,21 @@ class LineGraphHandler(Handler):
         super().__init__(app)
 
         self.methods = ["POST"]
+        self.fields += [
+            (["data"], list),
+            (["x_header"], Optional[str]),
+            (["y_header"], Optional[str]),
+            (["colours"], Optional[List[int]]),
+            (["legends"], Optional[List[str]]),
+            (["key_points"], Optional[List[Dict[str, object]]]),
+            (["max_value"], Optional[int]),
+            (["min_value"], Optional[int]),
+            (["value_prefix"], Optional[str]),
+            (["value_suffix"], Optional[str]),
+            (["sort_colours"], Optional[bool]),
+            (["steps"], Optional[int])
+        ]
+
         self.require_authorization = False
 
     def on_request(self):
