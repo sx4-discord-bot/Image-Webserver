@@ -118,7 +118,12 @@ class LineGraphHandler(Handler):
 
             mean = [sum(x) / len(x) for x in positions]
             colours = sorted(colours, key=lambda c: (0.2126 * ((c >> 16) & 0xFF) + 0.7152 * ((c >> 8) & 0xFF) + 0.0722 * (c & 0xFF)))
-            colours = sorted(colours, key=lambda x: mean[colours.index(x)])
+
+            def check_index(x):
+                colour_index = colours.index(x)
+                return 0 if len(mean) <= colour_index else mean[colour_index]
+
+            colours = sorted(colours, key=check_index)
 
         for i in range(max_length):
             polygon_image = Image.new("RGBA", image.size, 0)
