@@ -103,13 +103,14 @@ class LineGraphHandler(Handler):
         max_text_length = max([axis_font.getsize(x["name"])[0] for x in data])
         points_per_text = ceil(max_text_length / (width / len(data) * 0.8))
 
+        range_length = range(max_length)
         if sort_colours:
             positions = [[] for _ in range(max_length)]
             for point in data:
                 values = point.get("value")
                 sorted_values = sorted(values, reverse=True)
 
-                for i in range(max_length):
+                for i in range_length:
                     value = values[i]
                     if value is None:
                         continue
@@ -119,13 +120,14 @@ class LineGraphHandler(Handler):
             mean = [sum(x) / len(x) for x in positions]
             colours = sorted(colours, key=lambda c: (0.2126 * ((c >> 16) & 0xFF) + 0.7152 * ((c >> 8) & 0xFF) + 0.0722 * (c & 0xFF)))
 
-            def check_index(x):
-                colour_index = colours.index(x)
-                return 0 if len(mean) <= colour_index else mean[colour_index]
+            def check_index(d, x):
+                d_index = d.index(x)
+                return 0 if len(mean) <= d_index else mean[d_index]
 
-            colours = sorted(colours, key=check_index)
+            colours = sorted(colours, key=lambda x: check_index(colours, x))
+            range_length = sorted(range_length, key=lambda x: check_index(range_length, x))
 
-        for i in range(max_length):
+        for i in range_length:
             polygon_image = Image.new("RGBA", image.size, 0)
             polygon_draw = ImageDraw.Draw(polygon_image)
 
