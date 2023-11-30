@@ -20,25 +20,40 @@ class LineGraphHandler(Handler):
         self.require_authorization = False
 
     def on_request(self):
-        points = {}
-        data = self.body("data", dict)
-        for key in data:
-            value = data[key]
-            if isinstance(value, list):
-                points[key] = value
-            elif isinstance(value, int):
-                points[key] = [value]
-            else:
-                raise BadRequest(f"data.{key} needs to be of type int or list", ErrorCode.INVALID_FIELD_VALUE)
+        data = self.body("data", list)
+
+        max_length = 0
+        for index, point in enumerate(data):
+            name = point.get("name")
+            if name is None:
+                raise BadRequest(f"data.{index}.name does not exist", ErrorCode.INVALID_FIELD_VALUE)
+
+            if not isinstance(name, str):
+                raise BadRequest(f"data.{index}.name is not a string", ErrorCode.INVALID_FIELD_VALUE)
+
+            values = point.get("value")
+            if values is None:
+                raise BadRequest(f"data.{index}.value does not exist", ErrorCode.INVALID_FIELD_VALUE)
+
+            if isinstance(values, float):
+                values = [values]
+                point["value"] = values
+
+            if not isinstance(values, list):
+                raise BadRequest(f"data.{index}.value is not a list", ErrorCode.INVALID_FIELD_VALUE)
+
+            max_length = max(max_length, len(values))
 
         x_header = self.query("x_header") or self.body("x_header")
         y_header = self.query("y_header") or self.body("y_header")
         colours = self.body("colours", list, [])
+        legends = self.body("legends", list, [])
         key_points = self.body("key_points", list, [])
         max_value = self.body("max_value", int)
         min_value = self.body("min_value", int)
         value_prefix = self.body("value_prefix", str, "")
         value_suffix = self.body("value_suffix", str, "")
+        sort_colours = self.body("sort_colours", bool, True)
         y_points = self.body("steps", int, 7) + 1
         if y_points < 2:
             raise BadRequest(f"steps needs to be a value more than 0", ErrorCode.INVALID_FIELD_VALUE)
@@ -60,7 +75,7 @@ class LineGraphHandler(Handler):
 
         variable = min_value is None or max_value is None
         if variable:
-            values = list(filter(lambda a: a, reduce(lambda a, b: a + b, points.values())))
+            values = [x for x in reduce(lambda a, b: a + b["value"], data, []) if x is not None]
             max_value, min_value = max(values), min(values)
             difference = abs(max_value - min_value)
             if difference == 0:
@@ -82,20 +97,39 @@ class LineGraphHandler(Handler):
             change = difference / (y_points - 1)
             difference_graph = difference
 
-        x_change = width if len(points) == 1 else width / (len(points) - 1)
+        x_change = width if len(data) == 1 else width / (len(data) - 1)
 
-        max_length = max(map(lambda n: axis_font.getsize(n)[0], points.keys()))
-        points_per_text = ceil(max_length / (width / len(points) * 0.8))
+        max_text_length = max([axis_font.getsize(x["name"])[0] for x in data])
+        points_per_text = ceil(max_text_length / (width / len(data) * 0.8))
 
-        for i in range(max(map(len, points.values()))):
+        if sort_colours:
+            positions = [[] for _ in range(max_length)]
+            for point in data:
+                values = point.get("value")
+                sorted_values = sorted(values, reverse=True)
+
+                for i in range(max_length):
+                    value = values[i]
+                    if value is None:
+                        continue
+
+                    positions[i].append(sorted_values.index(value))
+
+            mean = [sum(x) / len(x) for x in positions]
+            colours = sorted(colours, key=lambda c: (0.2126 * ((c >> 16) & 0xFF) + 0.7152 * ((c >> 8) & 0xFF) + 0.0722 * (c & 0xFF)))
+            colours = sorted(colours, key=lambda x: mean[colours.index(x)])
+
+        for i in range(max_length):
             polygon_image = Image.new("RGBA", image.size, 0)
             polygon_draw = ImageDraw.Draw(polygon_image)
 
             polygon = [(excess, height + excess)]
-            for index, name in enumerate(points):
+            for index, point in enumerate(data):
+                name = point.get("name")
+
                 x = x_change * index + excess
                 if i == 0:
-                    extra = (x_change * 0.5 if len(points) == 1 else 0)
+                    extra = (x_change * 0.5 if len(data) == 1 else 0)
 
                     point_length = default_point_length
                     if index % points_per_text == 0:
@@ -107,8 +141,9 @@ class LineGraphHandler(Handler):
                     draw.line((x + extra, graph_height, x + extra, graph_height + point_length), fill=(255, 255, 255, 255),
                               width=1 * multiplier)
 
-                value = points[name][i]
-                if not value:
+                values = point.get("value")
+                value = values[i]
+                if value is None:
                     polygon.append((polygon[-1][0], graph_height))
                     break
 
@@ -116,13 +151,13 @@ class LineGraphHandler(Handler):
 
                 y = percent * height + excess
                 polygon.append((x, y))
-                if len(points) == 1:
+                if len(data) == 1:
                     polygon.append((x_change + excess, y))
             else:
                 polygon.append((graph_width, graph_height))
 
-            colour_data = colours[i] if len(colours) > i else {}
-            colour = as_rgb_tuple(colour_data.get("colour")) if "colour" in colour_data else (255, 0, 0)
+            colour = colours[i] if len(colours) > i else None
+            colour = (255, 0, 0) if colour is None else as_rgb_tuple(colour)
 
             polygon_draw.polygon(polygon, fill=colour + (100,))
 
@@ -137,22 +172,24 @@ class LineGraphHandler(Handler):
         legend_width = excess
         rectangle_size = 10 * multiplier
 
-        for colour_data in colours:
-            colour = colour_data.get("colour")
-            if colour is None:
+        for i in range(max_length):
+            if len(legends) < i:
                 continue
 
-            name = colour_data.get("name")
-            if name:
-                excess_center = graph_height + excess - (excess / 3)
-                draw.rectangle((legend_width, excess_center - (rectangle_size / 2), legend_width + rectangle_size,
-                                excess_center + (rectangle_size / 2)), fill=as_rgb_tuple(colour) + (255,))
+            name = legends[i]
 
-                legend_width += rectangle_size + 5 * multiplier
+            colour = colours[i] if len(colours) > i else None
+            colour = (255, 0, 0) if colour is None else as_rgb_tuple(colour)
 
-                draw.text((legend_width, excess_center - rectangle_size / 1.4), name, font=axis_font)
+            excess_center = graph_height + excess - (excess / 3)
+            draw.rectangle((legend_width, excess_center - (rectangle_size / 2), legend_width + rectangle_size,
+                            excess_center + (rectangle_size / 2)), fill=colour + (255,))
 
-                legend_width += axis_font.getsize(name)[0] + 15 * multiplier
+            legend_width += rectangle_size + 5 * multiplier
+
+            draw.text((legend_width, excess_center - rectangle_size / 1.4), name, font=axis_font)
+
+            legend_width += axis_font.getsize(name)[0] + 15 * multiplier
 
         log_value = 0 if change == 0 else log10(abs(change))
         digits = ceil(abs(log_value)) if log_value < 0 else 0
