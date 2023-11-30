@@ -30,7 +30,8 @@ class LineGraphHandler(Handler):
             (["value_prefix"], Optional[str]),
             (["value_suffix"], Optional[str]),
             (["sort_colours"], Optional[bool]),
-            (["steps"], Optional[int])
+            (["steps"], Optional[int]),
+            (["fill"], Optional[bool])
         ]
 
         self.require_authorization = False
@@ -70,6 +71,7 @@ class LineGraphHandler(Handler):
         value_prefix = self.body("value_prefix", str, "")
         value_suffix = self.body("value_suffix", str, "")
         sort_colours = self.body("sort_colours", bool, True)
+        fill = self.body("fill", bool, True)
         y_points = self.body("steps", int, 7) + 1
         if y_points < 2:
             raise BadRequest(f"steps needs to be a value more than 0", ErrorCode.INVALID_FIELD_VALUE)
@@ -182,7 +184,8 @@ class LineGraphHandler(Handler):
             colour = colours[i] if len(colours) > i else None
             colour = (255, 0, 0) if colour is None else as_rgb_tuple(colour)
 
-            polygon_draw.polygon(polygon, fill=colour + (100,))
+            if fill:
+                polygon_draw.polygon(polygon, fill=colour + (100,))
 
             line_points = polygon[1:-1]
             for p in range(len(line_points) - 1):
