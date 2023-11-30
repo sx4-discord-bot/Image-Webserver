@@ -20,7 +20,10 @@ class RadarChartHandler(Handler):
         self.methods = ["POST"]
         self.fields += [
             (["data"], List[Dict[str, object]]),
-            (["colours"], Optional[List[Dict[str, object]]])
+            (["colours"], Optional[List[int]]),
+            (["legends"], Optional[List[str]]),
+            (["sort_colours"], Optional[bool]),
+            (["fill"], Optional[bool])
         ]
 
         self.require_authorization = False
@@ -42,6 +45,9 @@ class RadarChartHandler(Handler):
             max_value = max(max_value, max(values))
 
         colours = self.body("colours", list, [])
+        legends = self.body("legends", list, [])
+        sort_colours = self.body("sort_colours", bool, True)
+        fill = self.body("fill", bool, True)
 
         start_angle = -math.pi / 2
         angle = 2 * math.pi / sides
@@ -80,22 +86,27 @@ class RadarChartHandler(Handler):
                 draw.line([polygon_points[i], polygon_points[(i + 1) % sides]], fill=(255, 255, 255, 255),
                           width=1 * multiplier)
 
-        legend_width = 15 * multiplier
-        rectangle_size = 15 * multiplier
-        for colour_data in colours:
-            colour = as_rgb_tuple(colour_data.get("colour")) if "colour" in colour_data else (255, 0, 0)
+        range_length = range(max_length)
+        if sort_colours:
+            positions = [[] for _ in range(max_length)]
+            for point in data:
+                values = point.get("values")
+                sorted_values = sorted(values, reverse=True)
 
-            name = colour_data.get("name")
-            if name:
-                draw.rectangle((legend_width, height - rectangle_size * 2, legend_width + rectangle_size, height - rectangle_size), fill=colour + (255,))
+                for i in range_length:
+                    positions[i].append(sorted_values.index(values[i]))
 
-                legend_width += rectangle_size + 5 * multiplier
+            mean = [sum(x) / len(x) for x in positions]
+            colours = sorted(colours, key=lambda c: (0.2126 * ((c >> 16) & 0xFF) + 0.7152 * ((c >> 8) & 0xFF) + 0.0722 * (c & 0xFF)))
 
-                draw.text((legend_width, height - rectangle_size * 2.2), name, font=font)
+            def check_index(other, v):
+                other_index = other.index(v)
+                return 0 if len(mean) <= other_index else mean[other_index]
 
-                legend_width += font.getsize(name)[0] + rectangle_size * 1.2
+            colours = sorted(colours, key=lambda x: check_index(colours, x))
+            range_length = sorted(range_length, key=lambda x: check_index(range_length, x))
 
-        for i in range(max_length):
+        for i in range_length:
             polygon_image = Image.new("RGBA", image.size, 0)
             polygon_draw = ImageDraw.Draw(polygon_image)
 
@@ -135,15 +146,34 @@ class RadarChartHandler(Handler):
 
                     draw.text((center + radius * cos_x + (cos_x * offset * 2.2) - (text_size[0] / 2) + (cos_x * text_size[0] * 0.7), center + radius * sin_y + (sin_y * offset * 2.2) - (text_size[1] / 2) + (sin_y * text_size[1] * 0.7)), text, font=font)
 
-            colour_data = colours[i] if len(colours) > i else {}
-            colour = as_rgb_tuple(colour_data.get("colour")) if "colour" in colour_data else (255, 0, 0)
+            colour = colours[i] if len(colours) > i else None
+            colour = (255, 0, 0) if colour is None else as_rgb_tuple(colour)
 
-            polygon_draw.polygon(polygon, fill=colour + (100,))
+            if fill:
+                polygon_draw.polygon(polygon, fill=colour + (100,))
 
             for p in range(len(polygon)):
                 polygon_draw.line((polygon[p], polygon[(p + 1) % len(polygon)]), fill=colour + (255,), width=2 * multiplier)
 
             image = Image.alpha_composite(image, polygon_image)
+
+        draw = ImageDraw.Draw(image)
+
+        legend_width = 15 * multiplier
+        rectangle_size = 15 * multiplier
+        for i in range(max_length):
+            if len(legends) <= i:
+                continue
+
+            name = legends[i]
+            colour = colours[i] if len(colours) > i else None
+            colour = (255, 0, 0) if colour is None else as_rgb_tuple(colour)
+
+            draw.rectangle((legend_width, height - rectangle_size * 2, legend_width + rectangle_size, height - rectangle_size), fill=colour + (255,))
+            legend_width += rectangle_size + 5 * multiplier
+
+            draw.text((legend_width, height - rectangle_size * 2.2), name, font=font)
+            legend_width += font.getsize(name)[0] + rectangle_size * 1.2
 
         image = image.resize((actual_width, actual_height), Image.LANCZOS)
 
