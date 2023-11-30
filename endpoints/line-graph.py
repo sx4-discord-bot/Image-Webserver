@@ -1,3 +1,4 @@
+import numbers
 from functools import reduce
 from math import ceil, log10, floor
 from typing import Optional, List
@@ -35,7 +36,7 @@ class LineGraphHandler(Handler):
             if values is None:
                 raise BadRequest(f"data.{index}.value does not exist", ErrorCode.INVALID_FIELD_VALUE)
 
-            if isinstance(values, float):
+            if isinstance(values, numbers.Number):
                 values = [values]
                 point["value"] = values
 
