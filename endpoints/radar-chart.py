@@ -129,7 +129,7 @@ class RadarChartHandler(Handler):
                 extra = 4 if icon_url is not None else 2 if text is not None else 1
 
                 line = (center + radius * cos_x + (cos_x * offset * extra), center + radius * sin_y + (sin_y * offset * extra), center + (cos_x * offset), center + (sin_y * offset))
-                draw.line(line, fill=(255, 255, 255, 255), width=1 * multiplier)
+                polygon_draw.line(line, fill=(255, 255, 255, 255), width=1 * multiplier)
 
                 if icon_url is not None:
                     try:
@@ -144,7 +144,7 @@ class RadarChartHandler(Handler):
                 elif text is not None:
                     text_size = font.getsize(text)
 
-                    draw.text((center + radius * cos_x + (cos_x * offset * 2.2) - (text_size[0] / 2) + (cos_x * text_size[0] * 0.7), center + radius * sin_y + (sin_y * offset * 2.2) - (text_size[1] / 2) + (sin_y * text_size[1] * 0.7)), text, font=font)
+                    polygon_draw.text((center + radius * cos_x + (cos_x * offset * 2.2) - (text_size[0] / 2) + (cos_x * text_size[0] * 0.7), center + radius * sin_y + (sin_y * offset * 2.2) - (text_size[1] / 2) + (sin_y * text_size[1] * 0.7)), text, font=font)
 
             colour = colours[i] if len(colours) > i else None
             colour = (255, 0, 0) if colour is None else as_rgb_tuple(colour)
