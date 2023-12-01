@@ -150,20 +150,19 @@ class LineGraphHandler(Handler):
 
             polygon = [(excess, height + excess)]
             for index, point in enumerate(data):
-                name = point.get("name")
-
                 x = x_change * index + excess
                 if i == 0:
+                    name = point.get("name")
                     extra = (x_change * 0.5 if len(data) == 1 else 0)
 
                     point_length = default_point_length
                     if index % points_per_text == 0:
                         font_width, _ = axis_font.getsize(name)
-                        draw.text((x + extra - font_width / 2, graph_height + (excess * 0.2)), name, font=axis_font)
+                        polygon_draw.text((x + extra - font_width / 2, graph_height + (excess * 0.2)), name, font=axis_font)
                     else:
                         point_length /= 2
 
-                    draw.line((x + extra, graph_height, x + extra, graph_height + point_length), fill=(255, 255, 255, 255),
+                    polygon_draw.line((x + extra, graph_height, x + extra, graph_height + point_length), fill=(255, 255, 255, 255),
                               width=1 * multiplier)
 
                 values = point.get("value")
