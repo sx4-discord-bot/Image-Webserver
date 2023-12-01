@@ -144,7 +144,6 @@ class LineGraphHandler(Handler):
             colours = sorted(colours, key=lambda x: check_index(colours, x))
             range_length = sorted(range_length, key=lambda x: check_index(range_length, x))
 
-        first = True
         for i in range_length:
             polygon_image = Image.new("RGBA", image.size, 0)
             polygon_draw = ImageDraw.Draw(polygon_image)
@@ -152,9 +151,7 @@ class LineGraphHandler(Handler):
             polygon = [(excess, height + excess)]
             for index, point in enumerate(data):
                 x = x_change * index + excess
-                if first:
-                    first = False
-
+                if i == range_length[0]:
                     name = point.get("name")
                     extra = (x_change * 0.5 if len(data) == 1 else 0)
 

@@ -106,7 +106,6 @@ class RadarChartHandler(Handler):
             colours = sorted(colours, key=lambda x: check_index(colours, x))
             range_length = sorted(range_length, key=lambda x: check_index(range_length, x))
 
-        first = True
         for i in range_length:
             polygon_image = Image.new("RGBA", image.size, 0)
             polygon_draw = ImageDraw.Draw(polygon_image)
@@ -122,8 +121,7 @@ class RadarChartHandler(Handler):
                 x, y = center + radius * (cos_x * percent) + (cos_x * offset), center + radius * (sin_y * percent) + (sin_y * offset)
                 polygon.append((x, y))
 
-                if first:
-                    first = False
+                if i != range_length[0]:
                     continue
 
                 icon_url = point.get("icon")
