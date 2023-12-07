@@ -58,10 +58,10 @@ class BarGraphHandler(Handler):
         graph_width, graph_height = width + excess, height + excess
         bar_offset = 25 * multiplier
 
-        image = Image.new("RGBA", (width + excess * 2, height + excess * 2), (128, 128, 128, 30))
+        image = Image.new("RGBA", (width + excess * 2, height + excess * 2), (18, 18, 18, 255))
 
         draw = ImageDraw.Draw(image)
-        draw.rectangle((excess, excess, graph_width, graph_height), fill=(255, 255, 255, 0),
+        draw.rectangle((excess, excess, graph_width, graph_height), fill=(24, 24, 24, 255),
                        outline=(255, 255, 255, 255), width=1 * multiplier)
 
         axis_font = get_font_asset("roboto/RobotoMono-Bold.ttf", 10 * multiplier)
@@ -147,7 +147,7 @@ class BarGraphHandler(Handler):
             x_font_width, x_font_height = font.getsize(x_header)
             y_font_width, y_font_height = font.getsize(y_header)
 
-            font_image = Image.new("RGBA", (y_font_width, y_font_height), (128, 128, 128, 30))
+            font_image = Image.new("RGBA", (y_font_width, y_font_height), (18, 18, 18, 255))
             font_draw = ImageDraw.Draw(font_image)
             font_draw.text((0, 0), y_header, font=font)
 

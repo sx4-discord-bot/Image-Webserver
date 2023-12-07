@@ -62,7 +62,7 @@ class RadarChartHandler(Handler):
 
         icon_size = int(width / 10), int(height / 10)
 
-        image = Image.new("RGBA", (width, height), (128, 128, 128, 30))
+        image = Image.new("RGBA", (width, height), (18, 18, 18, 255))
         draw = ImageDraw.Draw(image)
         font = get_font_asset("roboto/RobotoMono-Bold.ttf", 15 * multiplier)
 
@@ -79,7 +79,7 @@ class RadarChartHandler(Handler):
 
             polygons.append(polygon_points)
 
-        draw.polygon(polygons[-1], fill=(255, 255, 255, 0))
+        draw.polygon(polygons[-1], fill=(24, 24, 24, 255))
 
         for i in range(sides):
             for polygon_points in polygons:
