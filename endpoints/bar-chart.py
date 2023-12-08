@@ -3,7 +3,7 @@ from typing import Optional, List, Dict
 
 from PIL import Image, ImageDraw
 
-from handlers.handler import Handler
+from handlers.handler import Handler, GraphHandler
 from utility.colour import as_rgb_tuple
 from utility.error import ErrorCode
 from utility.image import get_font_asset, get_image_response, get_image, resize_to_ratio, get_font_optimal, \
@@ -11,12 +11,11 @@ from utility.image import get_font_asset, get_image_response, get_image, resize_
 from utility.response import BadRequest
 
 
-class BarGraphHandler(Handler):
+class BarGraphHandler(GraphHandler):
 
     def __init__(self, app):
         super().__init__(app)
 
-        self.methods = ["POST"]
         self.fields += [
             (["max_value"], Optional[int]),
             (["min_value"], Optional[int]),
@@ -25,7 +24,8 @@ class BarGraphHandler(Handler):
             (["x_header"], Optional[str]),
             (["y_header"], Optional[str]),
             (["sort"], Optional[str]),
-            (["bars"], List[Dict[str, object]])
+            (["bars"], List[Dict[str, object]]),
+            (["background_colour"], Optional[int])
         ]
 
         self.require_authorization = False
@@ -49,7 +49,7 @@ class BarGraphHandler(Handler):
         if sort and (sort == "asc" or sort == "desc"):
             bars = sorted(bars, key=lambda bar: bar.get("value"), reverse=sort == "desc")
 
-        multiplier = 2
+        multiplier = self.antialias
         actual_height, actual_width = 600, 1000
         height, width = actual_height * multiplier, actual_width * multiplier
 
@@ -58,11 +58,11 @@ class BarGraphHandler(Handler):
         graph_width, graph_height = width + excess, height + excess
         bar_offset = 25 * multiplier
 
-        image = Image.new("RGBA", (width + excess * 2, height + excess * 2), (18, 18, 18, 255))
+        image = Image.new("RGBA", (width + excess * 2, height + excess * 2), self.background_colour_alpha(255))
 
         draw = ImageDraw.Draw(image)
-        draw.rectangle((excess, excess, graph_width, graph_height), fill=(24, 24, 24, 255),
-                       outline=(255, 255, 255, 255), width=1 * multiplier)
+        draw.rectangle((excess, excess, graph_width, graph_height), fill=self.background_colour_alpha(100),
+                       outline=self.accent_colour_alpha(255), width=1 * multiplier)
 
         axis_font = get_font_asset("roboto/RobotoMono-Bold.ttf", 10 * multiplier)
 
@@ -110,7 +110,7 @@ class BarGraphHandler(Handler):
 
             if name:
                 font_width, font_height = bar_font.getsize(name)
-                draw.text((x + x_change / 2 - font_width / 2, graph_height + (excess * 0.07)), name, font=bar_font)
+                draw.text((x + x_change / 2 - font_width / 2, graph_height + (excess * 0.07)), name, font=bar_font, fill=self.accent_colour_alpha(255))
 
             if icon_url:
                 icon_size = min(excess * 0.75 - image_font_height, x_change * 0.25)
@@ -133,30 +133,30 @@ class BarGraphHandler(Handler):
 
         for index in range(y_points):
             y = (height / (y_points - 1) * index) + excess
-            draw.line((excess - point_length, y, graph_width, y), fill=(255, 255, 255, 255), width=1 * multiplier)
+            draw.line((excess - point_length, y, graph_width, y), fill=self.accent_colour_alpha(255), width=1 * multiplier)
 
             value = max_value - (index * change)
 
             text = f"{value_prefix}{value:.{digits}f}{value_suffix}"
             font_width, font_height = axis_font.getsize(text)
 
-            draw.text((excess - (excess / 5) - font_width, y - font_height / 1.8), text, font=axis_font)
+            draw.text((excess - (excess / 5) - font_width, y - font_height / 1.8), text, font=axis_font, fill=self.accent_colour_alpha(255))
 
         if x_header and y_header:
             font = get_font_asset("roboto/RobotoMono-Regular.ttf", excess - (25 * multiplier))
             x_font_width, x_font_height = font.getsize(x_header)
             y_font_width, y_font_height = font.getsize(y_header)
 
-            font_image = Image.new("RGBA", (y_font_width, y_font_height), (18, 18, 18, 255))
+            font_image = Image.new("RGBA", (y_font_width, y_font_height), self.background_colour_alpha(255))
             font_draw = ImageDraw.Draw(font_image)
-            font_draw.text((0, 0), y_header, font=font)
+            font_draw.text((0, 0), y_header, font=font, fill=self.accent_colour_alpha(255))
 
             font_image = font_image.rotate(270, expand=1)
 
             image.paste(font_image,
                         (int(width + excess * 2 - y_font_height), int(((height + excess * 2) - y_font_width) / 2)))
             draw.text((((width + excess * 2) - x_font_width) / 2, excess - (excess / 7) - x_font_height), x_header,
-                      font=font)
+                      font=font, fill=self.accent_colour_alpha(255))
 
         image = image.resize((actual_width, actual_height), Image.LANCZOS)
 

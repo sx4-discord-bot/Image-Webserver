@@ -5,14 +5,14 @@ from typing import Optional, List, Dict
 
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 
-from handlers.handler import Handler
+from handlers.handler import Handler, GraphHandler
 from utility.colour import as_rgb_tuple
 from utility.error import ErrorCode
 from utility.image import get_image_response, get_font_asset
 from utility.response import BadRequest
 
 
-class LineGraphHandler(Handler):
+class LineGraphHandler(GraphHandler):
 
     def __init__(self, app):
         super().__init__(app)
@@ -76,7 +76,7 @@ class LineGraphHandler(Handler):
         if y_points < 2:
             raise BadRequest(f"steps needs to be a value more than 0", ErrorCode.INVALID_FIELD_VALUE)
 
-        multiplier = 3
+        multiplier = self.antialias
         actual_height, actual_width = 600, 1000
         height, width = actual_height * multiplier, actual_width * multiplier
 
@@ -84,10 +84,10 @@ class LineGraphHandler(Handler):
         default_point_length = int(excess / 7.5)
         graph_width, graph_height = width + excess, height + excess
 
-        image = Image.new("RGBA", (width + excess * 2, height + excess * 2), (18, 18, 18, 255))
+        image = Image.new("RGBA", (width + excess * 2, height + excess * 2), self.background_colour_alpha(255))
 
         draw = ImageDraw.Draw(image)
-        draw.rectangle((excess, excess, graph_width, graph_height), fill=(24, 24, 24, 255), outline=(255, 255, 255, 255), width=1 * multiplier)
+        draw.rectangle((excess, excess, graph_width, graph_height), fill=self.background_colour_alpha(100), outline=self.accent_colour_alpha(255), width=1 * multiplier)
 
         axis_font = get_font_asset("roboto/RobotoMono-Bold.ttf", 10 * multiplier)
 
@@ -158,11 +158,11 @@ class LineGraphHandler(Handler):
                     point_length = default_point_length
                     if index % points_per_text == 0:
                         font_width, _ = axis_font.getsize(name)
-                        draw.text((x + extra - font_width / 2, graph_height + (excess * 0.2)), name, font=axis_font)
+                        draw.text((x + extra - font_width / 2, graph_height + (excess * 0.2)), name, font=axis_font, fill=self.accent_colour_alpha(255))
                     else:
                         point_length /= 2
 
-                    draw.line((x + extra, graph_height, x + extra, graph_height + point_length), fill=(255, 255, 255, 255),
+                    draw.line((x + extra, graph_height, x + extra, graph_height + point_length), fill=self.accent_colour_alpha(255),
                               width=1 * multiplier)
 
                 values = point.get("value")
@@ -212,7 +212,7 @@ class LineGraphHandler(Handler):
 
             legend_width += rectangle_size + 5 * multiplier
 
-            draw.text((legend_width, excess_center - rectangle_size / 1.4), name, font=axis_font)
+            draw.text((legend_width, excess_center - rectangle_size / 1.4), name, font=axis_font, fill=self.accent_colour_alpha(255))
 
             legend_width += axis_font.getsize(name)[0] + 15 * multiplier
 
@@ -221,14 +221,14 @@ class LineGraphHandler(Handler):
 
         for index in range(y_points):
             y = (height / (y_points - 1) * index) + excess
-            draw.line((excess - default_point_length, y, graph_width, y), fill=(255, 255, 255, 255), width=1 * multiplier)
+            draw.line((excess - default_point_length, y, graph_width, y), fill=self.accent_colour_alpha(255), width=1 * multiplier)
 
             value = max_value - (index * change)
 
             text = f"{value_prefix}{value:.{digits}f}{value_suffix}"
             font_width, font_height = axis_font.getsize(text)
 
-            draw.text((excess - (excess / 5) - font_width, y - font_height / 1.8), text, font=axis_font)
+            draw.text((excess - (excess / 5) - font_width, y - font_height / 1.8), text, font=axis_font, fill=self.accent_colour_alpha(255))
 
         for key_point in key_points:
             value = key_point.get("value")
@@ -245,23 +245,23 @@ class LineGraphHandler(Handler):
 
             draw.line((excess, y, graph_width, y), fill=(as_rgb_tuple(colour) if colour is not None else (255, 0, 0)) + (255,), width=2 * multiplier)
 
-        draw.rectangle((excess, excess, graph_width, graph_height), outline=(255, 255, 255, 255))
+        draw.rectangle((excess, excess, graph_width, graph_height), outline=self.accent_colour_alpha(255))
 
         if x_header and y_header:
             font = get_font_asset("roboto/RobotoMono-Regular.ttf", excess - (25 * multiplier))
             x_font_width, x_font_height = font.getsize(x_header)
             y_font_width, y_font_height = font.getsize(y_header)
 
-            font_image = Image.new("RGBA", (y_font_width, y_font_height), (18, 18, 18, 255))
+            font_image = Image.new("RGBA", (y_font_width, y_font_height), self.background_colour_alpha(255))
             font_draw = ImageDraw.Draw(font_image)
-            font_draw.text((0, 0), y_header, font=font)
+            font_draw.text((0, 0), y_header, font=font, fill=self.accent_colour_alpha(255))
 
             font_image = font_image.rotate(270, expand=1)
 
             image.paste(font_image,
                         (int(width + excess * 2 - y_font_height), int(((height + excess * 2) - y_font_width) / 2)))
             draw.text((((width + excess * 2) - x_font_width) / 2, excess - (excess / 7) - x_font_height), x_header,
-                      font=font)
+                      font=font, fill=self.accent_colour_alpha(255))
 
         image = image.resize((actual_width, actual_height), Image.LANCZOS)
 

@@ -5,14 +5,14 @@ from typing import Dict, List, Optional
 
 from PIL import ImageDraw, Image
 
-from handlers.handler import Handler
+from handlers.handler import Handler, GraphHandler
 from utility.colour import as_rgb_tuple
 from utility.error import ErrorCode
 from utility.image import get_image_response, get_image_asset, get_image, get_font_asset
 from utility.response import BadRequest
 
 
-class RadarChartHandler(Handler):
+class RadarChartHandler(GraphHandler):
 
     def __init__(self, app):
         super().__init__(app)
@@ -52,7 +52,7 @@ class RadarChartHandler(Handler):
         start_angle = -math.pi / 2
         angle = 2 * math.pi / sides
 
-        multiplier = 3
+        multiplier = self.antialias
         actual_width, actual_height = 1024, 1024
         width, height = actual_width * multiplier, actual_height * multiplier
 
@@ -62,7 +62,7 @@ class RadarChartHandler(Handler):
 
         icon_size = int(width / 10), int(height / 10)
 
-        image = Image.new("RGBA", (width, height), (18, 18, 18, 255))
+        image = Image.new("RGBA", (width, height), self.background_colour_alpha(255))
         draw = ImageDraw.Draw(image)
         font = get_font_asset("roboto/RobotoMono-Bold.ttf", 15 * multiplier)
 
@@ -79,11 +79,11 @@ class RadarChartHandler(Handler):
 
             polygons.append(polygon_points)
 
-        draw.polygon(polygons[-1], fill=(24, 24, 24, 255))
+        draw.polygon(polygons[-1], fill=self.background_colour_alpha(100))
 
         for i in range(sides):
             for polygon_points in polygons:
-                draw.line([polygon_points[i], polygon_points[(i + 1) % sides]], fill=(255, 255, 255, 255),
+                draw.line([polygon_points[i], polygon_points[(i + 1) % sides]], fill=self.accent_colour_alpha(255),
                           width=1 * multiplier)
 
         range_length = range(max_length)
@@ -129,7 +129,7 @@ class RadarChartHandler(Handler):
                 extra = 4 if icon_url is not None else 2 if text is not None else 1
 
                 line = (center + radius * cos_x + (cos_x * offset * extra), center + radius * sin_y + (sin_y * offset * extra), center + (cos_x * offset), center + (sin_y * offset))
-                draw.line(line, fill=(255, 255, 255, 255), width=1 * multiplier)
+                draw.line(line, fill=self.accent_colour_alpha(255), width=1 * multiplier)
 
                 if icon_url is not None:
                     try:
@@ -144,7 +144,7 @@ class RadarChartHandler(Handler):
                 elif text is not None:
                     text_size = font.getsize(text)
 
-                    draw.text((center + radius * cos_x + (cos_x * offset * 2.2) - (text_size[0] / 2) + (cos_x * text_size[0] * 0.7), center + radius * sin_y + (sin_y * offset * 2.2) - (text_size[1] / 2) + (sin_y * text_size[1] * 0.7)), text, font=font)
+                    draw.text((center + radius * cos_x + (cos_x * offset * 2.2) - (text_size[0] / 2) + (cos_x * text_size[0] * 0.7), center + radius * sin_y + (sin_y * offset * 2.2) - (text_size[1] / 2) + (sin_y * text_size[1] * 0.7)), text, font=font, fill=self.accent_colour_alpha(255))
 
             colour = colours[i] if len(colours) > i else None
             colour = (255, 0, 0) if colour is None else as_rgb_tuple(colour)
@@ -172,7 +172,7 @@ class RadarChartHandler(Handler):
             draw.rectangle((legend_width, height - rectangle_size * 2, legend_width + rectangle_size, height - rectangle_size), fill=colour + (255,))
             legend_width += rectangle_size + 5 * multiplier
 
-            draw.text((legend_width, height - rectangle_size * 2.2), name, font=font)
+            draw.text((legend_width, height - rectangle_size * 2.2), name, font=font, fill=self.accent_colour_alpha(255))
             legend_width += font.getsize(name)[0] + rectangle_size * 1.2
 
         image = image.resize((actual_width, actual_height), Image.LANCZOS)
