@@ -79,7 +79,7 @@ class RadarChartHandler(GraphHandler):
 
             polygons.append(polygon_points)
 
-        draw.polygon(polygons[-1], fill=self.background_colour_alpha(100))
+        draw.polygon(polygons[-1], fill=(255, 255, 255, 10))
 
         for i in range(sides):
             for polygon_points in polygons:
@@ -177,7 +177,7 @@ class RadarChartHandler(GraphHandler):
 
         image = image.resize((actual_width, actual_height), Image.LANCZOS)
 
-        final_image = Image.new("RGBA", (actual_width, actual_height), self.background_colour_alpha(255))
+        final_image = Image.new("RGB", (actual_width, actual_height), self.background_colour)
         final_image.paste(image, (0, 0), image)
 
         return get_image_response([final_image])
