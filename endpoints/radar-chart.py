@@ -62,7 +62,7 @@ class RadarChartHandler(GraphHandler):
 
         icon_size = int(width / 10), int(height / 10)
 
-        image = Image.new("RGBA", (width, height), self.background_colour_alpha(255))
+        image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
         draw = ImageDraw.Draw(image)
         font = get_font_asset("roboto/RobotoMono-Bold.ttf", 15 * multiplier)
 
@@ -177,4 +177,7 @@ class RadarChartHandler(GraphHandler):
 
         image = image.resize((actual_width, actual_height), Image.LANCZOS)
 
-        return get_image_response([image])
+        final_image = Image.new("RGBA", (actual_width, actual_height), self.background_colour_alpha(255))
+        final_image.paste(image, (0, 0), image)
+
+        return get_image_response([final_image])

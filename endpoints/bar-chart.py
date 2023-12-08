@@ -24,8 +24,7 @@ class BarGraphHandler(GraphHandler):
             (["x_header"], Optional[str]),
             (["y_header"], Optional[str]),
             (["sort"], Optional[str]),
-            (["bars"], List[Dict[str, object]]),
-            (["background_colour"], Optional[int])
+            (["bars"], List[Dict[str, object]])
         ]
 
         self.require_authorization = False
@@ -58,7 +57,7 @@ class BarGraphHandler(GraphHandler):
         graph_width, graph_height = width + excess, height + excess
         bar_offset = 25 * multiplier
 
-        image = Image.new("RGBA", (width + excess * 2, height + excess * 2), self.background_colour_alpha(255))
+        image = Image.new("RGBA", (width + excess * 2, height + excess * 2), (0, 0, 0, 0))
 
         draw = ImageDraw.Draw(image)
         draw.rectangle((excess, excess, graph_width, graph_height), fill=self.background_colour_alpha(100),
@@ -68,7 +67,7 @@ class BarGraphHandler(GraphHandler):
 
         variable = min_value is None or max_value is None
         if variable:
-            values = list(map(lambda bar: bar["value"], bars))
+            values = [bar["value"] for bar in bars]
             max_value, min_value = max(values), min(values)
             difference = abs(max_value - min_value)
             if difference == 0:
@@ -92,8 +91,8 @@ class BarGraphHandler(GraphHandler):
 
         x_change = width - bar_offset * 2 if len(bars) == 1 else (width - (bar_offset * (len(bars) + 1))) / len(bars)
 
-        font_sizes = map(lambda bar: (get_font_optimal("roboto/RobotoMono-Bold.ttf", 20 * multiplier, bar.get("name"), x_change * 0.9), bar.get("name")), filter(lambda bar: bar.get("name"), bars))
-        bar_font = min(list(font_sizes), key=lambda f: f[0].getsize(f[1])[0])[0]
+        font_sizes = [(get_font_optimal("roboto/RobotoMono-Bold.ttf", 20 * multiplier, bar.get("name"), x_change * 0.9), bar.get("name")) for bar in bars if bar.get("name")]
+        bar_font = min(font_sizes, key=lambda f: f[0].getsize(f[1])[0])[0]
         image_font_height = bar_font.getsize("a")[1]
 
         for index, data in enumerate(bars):
@@ -159,5 +158,8 @@ class BarGraphHandler(GraphHandler):
                       font=font, fill=self.accent_colour_alpha(255))
 
         image = image.resize((actual_width, actual_height), Image.LANCZOS)
+
+        final_image = Image.new("RGBA", (actual_width, actual_height), self.background_colour_alpha(255))
+        final_image.paste(image, (0, 0), image)
 
         return get_image_response([image])
