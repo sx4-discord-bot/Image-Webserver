@@ -146,7 +146,7 @@ class BarGraphHandler(GraphHandler):
             x_font_width, x_font_height = font.getsize(x_header)
             y_font_width, y_font_height = font.getsize(y_header)
 
-            font_image = Image.new("RGBA", (y_font_width, y_font_height), self.background_colour_alpha(255))
+            font_image = Image.new("RGBA", (y_font_width, y_font_height), (0, 0, 0, 0))
             font_draw = ImageDraw.Draw(font_image)
             font_draw.text((0, 0), y_header, font=font, fill=self.accent_colour_alpha(255))
 
