@@ -162,4 +162,4 @@ class BarGraphHandler(GraphHandler):
         final_image = Image.new("RGBA", (actual_width, actual_height), self.background_colour_alpha(255))
         final_image.paste(image, (0, 0), image)
 
-        return get_image_response([image])
+        return get_image_response([final_image])
