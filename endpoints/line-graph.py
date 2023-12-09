@@ -87,7 +87,7 @@ class LineGraphHandler(GraphHandler):
         image = Image.new("RGBA", (width + excess * 2, height + excess * 2), (0, 0, 0, 0))
 
         draw = ImageDraw.Draw(image)
-        draw.rectangle((excess, excess, graph_width, graph_height), fill=(255, 255, 255, 10), outline=self.accent_colour_alpha(255), width=1 * multiplier)
+        draw.rectangle((excess, excess, graph_width, graph_height), fill=self.surface_colour_alpha(10), outline=self.accent_colour_alpha(255), width=1 * multiplier)
 
         axis_font = get_font_asset("roboto/RobotoMono-Bold.ttf", 10 * multiplier)
 

@@ -1,3 +1,4 @@
+import colorsys
 from functools import wraps
 from io import BytesIO
 from typing import Any, Type, List, Tuple, Optional, Callable
@@ -5,7 +6,7 @@ from typing import Any, Type, List, Tuple, Optional, Callable
 from PIL import Image, UnidentifiedImageError
 from flask import request
 
-from utility.colour import as_rgb_tuple
+from utility.colour import as_rgb_tuple, as_rgb
 from utility.config import config
 from utility.error import ErrorCode
 from utility.image import get_image, get_image_response, for_each_frame
@@ -136,7 +137,8 @@ class GraphHandler(Handler):
     @check_queries
     def __call__(self):
         self.background_colour = as_rgb_tuple(self.body("background_colour", int, 0x121212))
-        self.accent_colour = as_rgb_tuple(self.body("accent_colour", int, 0xFFFFFF))
+        self.surface_colour = (int(255 - colorsys.rgb_to_hls(*self.background_colour)[1]),) * 3
+        self.accent_colour = as_rgb_tuple(self.body("accent_colour", int, as_rgb(self.surface_colour)))
         self.antialias = min(5, max(1, self.body("antialias", int, 3)))
 
         return self.on_request()
@@ -146,6 +148,10 @@ class GraphHandler(Handler):
 
     def accent_colour_alpha(self, alpha: int) -> Tuple[int, int, int, int]:
         return self.accent_colour + (alpha,)
+
+    def surface_colour_alpha(self, alpha: int) -> Tuple[int, int, int, int]:
+        return self.surface_colour + (alpha,)
+
 
 class MultipleImageHandler(Handler):
 

@@ -79,7 +79,7 @@ class RadarChartHandler(GraphHandler):
 
             polygons.append(polygon_points)
 
-        draw.polygon(polygons[-1], fill=(255, 255, 255, 10))
+        draw.polygon(polygons[-1], fill=self.surface_colour_alpha(10))
 
         for i in range(sides):
             for polygon_points in polygons:
