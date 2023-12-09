@@ -137,11 +137,9 @@ class GraphHandler(Handler):
     @check_queries
     def __call__(self):
         self.background_colour = as_rgb_tuple(self.body("background_colour", int, 0x121212))
-
         brightness = int(255 - colorsys.rgb_to_hls(*self.background_colour)[1])
-
-        self.surface_colour = (brightness,) * 3
-        self.accent_colour = as_rgb_tuple(self.body("accent_colour", int, as_rgb((255 if brightness > 127 else 0,) * 3)))
+        self.surface_colour = (255 if brightness > 127 else 0,) * 3
+        self.accent_colour = as_rgb_tuple(self.body("accent_colour", int, as_rgb(self.surface_colour)))
         self.antialias = min(5, max(1, self.body("antialias", int, 3)))
 
         return self.on_request()
