@@ -78,6 +78,32 @@ def check_fields(f):
     return wrapper
 
 
+def default_mapping(query: bool):
+    def inner(f):
+        def wrapper(self, key: str, mapping: Callable[[str], Any] = None, default: Any = None):
+            if mapping is not None:
+                return f(self, key, mapping, default)
+
+            fields = self.queries if query else self.fields
+            for field in fields:
+                names, t = field
+                if key not in names:
+                    continue
+
+                if hasattr(t, "__args__"):
+                    args = t.__args__
+                    if len(args) == 2 and args[1] is type(None):
+                        t = args[0]
+
+                return f(self, key, t, default)
+
+            return f(self, key, str, default)
+
+        return wrapper
+
+    return inner
+
+
 class Handler:
 
     def __init__(self, app):
@@ -100,24 +126,26 @@ class Handler:
     def on_request(self, *args):
         pass
 
-    def query(self, query: str, mapping: Callable[[str], Any] = str, default: Any = None) -> Any:
+    @default_mapping(True)
+    def query(self, query: str, mapping: Callable[[str], Any] = None, default: Any = None) -> Any:
         return self.request.args.get(query, type=mapping, default=default)
 
     def header(self, header: str, mapping: Callable[[str], Any] = str, default: Any = None) -> Any:
         return self.request.headers.get(header, type=mapping, default=default)
 
-    def body(self, key: str, type: Optional[Type[Any]] = str, default: Any = None) -> Any:
+    @default_mapping(False)
+    def body(self, key: str, mapping: Optional[Type[Any]] = None, default: Any = None) -> Any:
         value = self.request.json.get(key)
         if value is None:
             return default
 
-        if not type:
+        if not mapping:
             return value
 
         try:
-            return type(value)
+            return mapping(value)
         except ValueError:
-            raise BadRequest(f"{key} is meant to be a {type.__name__}", ErrorCode.INVALID_QUERY_VALUE)
+            raise BadRequest(f"{key} is meant to be a {mapping.__name__}", ErrorCode.INVALID_QUERY_VALUE)
 
 
 class GraphHandler(Handler):
@@ -127,8 +155,8 @@ class GraphHandler(Handler):
 
         self.methods = ["POST"]
         self.fields += [
-            (["background_colour"], Optional[int]),
-            (["accent_colour"], Optional[int]),
+            (["background_colour"], Optional[Colour]),
+            (["accent_colour"], Optional[Colour]),
             (["antialias"], Optional[int])
         ]
 
@@ -136,11 +164,11 @@ class GraphHandler(Handler):
     @check_fields
     @check_queries
     def __call__(self):
-        self.background_colour = as_rgb_tuple(self.body("background_colour", Colour, 0x121212))
+        self.background_colour = as_rgb_tuple(self.body("background_colour", default=0x121212))
         brightness = int(255 - colorsys.rgb_to_hls(*self.background_colour)[1])
         self.surface_colour = (255 if brightness > 127 else 0,) * 3
-        self.accent_colour = as_rgb_tuple(self.body("accent_colour", Colour, as_rgb(self.surface_colour)))
-        self.antialias = min(5, max(1, self.body("antialias", int, 3)))
+        self.accent_colour = as_rgb_tuple(self.body("accent_colour", default=as_rgb(self.surface_colour)))
+        self.antialias = min(5, max(1, self.body("antialias", default=3)))
 
         return self.on_request()
 
