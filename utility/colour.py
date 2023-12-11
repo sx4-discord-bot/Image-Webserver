@@ -28,7 +28,7 @@ class Colour:
             colour_value = ImageColor.colormap.get(value.lower())
             if isinstance(colour_value, tuple):
                 return as_rgb(colour_value)
-            else:
+            elif isinstance(colour_value, str):
                 return int(colour_value[1:], 16)
 
             raise ValueError
