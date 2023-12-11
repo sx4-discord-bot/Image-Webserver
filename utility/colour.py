@@ -25,9 +25,11 @@ class Colour:
             except ValueError:
                 pass
 
-            hex_value = ImageColor.colormap.get(value.lower())
-            if hex_value:
-                return int(hex_value[1:], 16)
+            colour_value = ImageColor.colormap.get(value.lower())
+            if isinstance(colour_value, tuple):
+                return as_rgb(colour_value)
+            else:
+                return int(colour_value[1:], 16)
 
             raise ValueError
         elif isinstance(value, int):
