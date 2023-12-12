@@ -78,15 +78,14 @@ def check_fields(f):
     return wrapper
 
 
-def default_mapping(query: bool):
+def check_values(values_map: Callable[[Any], List[Tuple[List[str], Callable[[str], Any]]]]):
     def inner(f):
         def wrapper(self, key: str, mapping: Callable[[str], Any] = None, default: Any = None):
             if mapping is not None:
                 return f(self, key, mapping, default)
 
-            fields = self.queries if query else self.fields
-            for field in fields:
-                names, t = field
+            values = values_map(self)
+            for names, t in values:
                 if key not in names:
                     continue
 
@@ -95,7 +94,18 @@ def default_mapping(query: bool):
                     if len(args) == 2 and args[1] is type(None):
                         t = args[0]
 
-                return f(self, key, t, default)
+                for name in names:
+                    try:
+                        value = f(self, name, t, default)
+                    except ValueError:
+                        continue
+
+                    if value is None or value == default:
+                        continue
+
+                    return value
+                else:
+                    return default
 
             return f(self, key, str, default)
 
@@ -126,14 +136,14 @@ class Handler:
     def on_request(self, *args):
         pass
 
-    @default_mapping(True)
+    @check_values(lambda x: x.queries)
     def query(self, query: str, mapping: Callable[[str], Any] = None, default: Any = None) -> Any:
         return self.request.args.get(query, type=mapping, default=default)
 
     def header(self, header: str, mapping: Callable[[str], Any] = str, default: Any = None) -> Any:
         return self.request.headers.get(header, type=mapping, default=default)
 
-    @default_mapping(False)
+    @check_values(lambda x: x.fields)
     def body(self, key: str, mapping: Optional[Type[Any]] = None, default: Any = None) -> Any:
         value = self.request.json.get(key)
         if value is None:
@@ -155,7 +165,7 @@ class GraphHandler(Handler):
 
         self.methods = ["POST"]
         self.fields += [
-            (["background_colour"], Optional[Colour]),
+            (["background_colour", "background_color"], Optional[Colour]),
             (["accent_colour"], Optional[Colour]),
             (["antialias"], Optional[int])
         ]

@@ -54,7 +54,7 @@ class ProfileHandler(SingleImageHandler):
         banner_id = self.body("banner_id", str)
         directory = self.body("directory", str)
         reputation = self.body("reputation", int)
-        colour_int = self.body("colour", int, 13997604) or self.body("color", int, 13997604)
+        colour_int = self.body("colour", int, 13997604)
         colour = as_rgb_tuple(colour_int)
 
         poppins_name = get_font_asset("poppins/Poppins-Medium.ttf", 40)

@@ -60,7 +60,7 @@ class DiscordHandler(SingleImageHandler):
 
     def on_request(self, avatar):
         name = self.body("name")
-        colour = as_rgb_tuple(self.body("colour", int) or self.body("color", int))
+        colour = as_rgb_tuple(self.body("colour", int))
         text = self.body("text")
         bot = self.body("bot", bool)
         dark_theme = self.body("dark_theme", bool)
