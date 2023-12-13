@@ -81,13 +81,13 @@ def check_fields(f):
 def check_values(values_map: Callable[[Any], List[Tuple[List[str], Callable[[str], Any]]]]):
     def inner(f):
         def wrapper(self, key: str, mapping: Callable[[str], Any] = None, default: Any = None):
-            if mapping is not None:
-                return f(self, key, mapping, default)
-
             values = values_map(self)
             for names, t in values:
                 if key not in names:
                     continue
+
+                if mapping is not None:
+                    t = mapping
 
                 if hasattr(t, "__args__"):
                     args = t.__args__
