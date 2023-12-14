@@ -88,8 +88,7 @@ def check_values(values_map: Callable[[Any], List[Tuple[List[str], Callable[[str
 
                 if mapping is not None:
                     t = mapping
-
-                if hasattr(t, "__args__"):
+                elif hasattr(t, "__args__"):
                     args = t.__args__
                     if len(args) == 2 and args[1] is type(None):
                         t = args[0]
@@ -144,7 +143,7 @@ class Handler:
         return self.request.headers.get(header, type=mapping, default=default)
 
     @check_values(lambda x: x.fields)
-    def body(self, key: str, mapping: Optional[Type[Any]] = None, default: Any = None) -> Any:
+    def body(self, key: str, mapping: Callable[[str], Any] = None, default: Any = None) -> Any:
         value = self.request.json.get(key)
         if value is None:
             return default
@@ -155,7 +154,7 @@ class Handler:
         try:
             return mapping(value)
         except ValueError:
-            raise BadRequest(f"{key} is meant to be a {mapping.__name__}", ErrorCode.INVALID_QUERY_VALUE)
+            raise BadRequest(f"{key} is meant to be a {mapping.__name__}", ErrorCode.INVALID_FIELD_VALUE)
 
 
 class GraphHandler(Handler):

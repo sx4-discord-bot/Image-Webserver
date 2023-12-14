@@ -15,10 +15,11 @@ class Colour:
 
     def __new__(cls, value):
         if isinstance(value, str):
-            try:
-                return int(value[1 if value.startswith("#") else 0:], 16)
-            except ValueError:
-                pass
+            if value.startswith("#"):
+                try:
+                    return int(value[1:], 16)
+                except ValueError:
+                    pass
 
             try:
                 return int(value)

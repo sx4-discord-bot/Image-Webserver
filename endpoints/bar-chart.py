@@ -24,7 +24,8 @@ class BarGraphHandler(GraphHandler):
             (["x_header"], Optional[str]),
             (["y_header"], Optional[str]),
             (["sort"], Optional[str]),
-            (["bars"], List[Dict[str, object]])
+            (["bars"], List[Dict[str, object]]),
+            (["steps"], Optional[int])
         ]
 
         self.require_authorization = False
